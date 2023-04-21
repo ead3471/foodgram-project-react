@@ -6,6 +6,7 @@ from api.views import UserViewSet
 router_api = DefaultRouter()
 router_api.register(r'users', UserViewSet)
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('api/', include('djoser.urls')),

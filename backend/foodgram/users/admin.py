@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
 
 class UserAdmin(DefaultUserAdmin):
-    list_filter = ['email', 'username']
+    list_filter = ['email']
 
 
 admin.site.register(User, UserAdmin)

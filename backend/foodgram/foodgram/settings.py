@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-    'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
@@ -153,7 +152,6 @@ REST_FRAMEWORK = {
 
 
 DJOSER = {
-    # 'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'SERIALIZERS': {
         'user': 'api.serializers.UserSerializer',
@@ -166,14 +164,5 @@ DJOSER = {
 
 }
 
-
-# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-# EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
-# REGISTRATION_EMAIL_SUBJECT = 'YAMDB registration.'
-# REGISTRATION_EMAIL_FROM = 'team15@yamdb.fake'
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

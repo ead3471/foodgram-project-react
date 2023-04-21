@@ -18,7 +18,7 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email, ''username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'User'
@@ -32,6 +32,10 @@ class Subscribe(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='subscribings')  # подписки юзера
-    subscribes = models.ForeignKey(User,
-                                   on_delete=models.CASCADE,
-                                   related_name='subscrubers')  # подписчики юзера
+    subscribe = models.ForeignKey(User,
+                                  on_delete=models.CASCADE,
+                                  related_name='subscrubers')  # подписчики юзера
+
+    def __str__(self):
+        return (f"{self.user.username}({self.user.id})->"
+                f"{self.author.username}({self.author.id})")
