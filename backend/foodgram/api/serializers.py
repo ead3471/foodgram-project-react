@@ -47,6 +47,13 @@ class IngredientSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class RecipeDescriptionSerializer(ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'coocking_time')
+        read_only_fields = '__all__'
+
+
 class SubscribeSerializer(ModelSerializer):
 
     class Meta:

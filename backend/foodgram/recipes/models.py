@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
-from colorfield.fields import ColorField
+from django.core.validators import MinValueValidator, RegexValidator
+
 
 User = get_user_model()
 
@@ -11,7 +11,8 @@ class Tag(models.Model):
                             unique=True)
     color = models.CharField(default='#FFFFFF',
                              max_length=7,
-                             unique=True)
+                             unique=True,
+                             validators=(RegexValidator(regex="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"),))
     slug = models.SlugField()
 
     def __str__(self) -> str:
