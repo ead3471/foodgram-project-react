@@ -37,5 +37,5 @@ class Subscribe(models.Model):
                                   related_name='subscrubers')  # подписчики юзера
 
     def __str__(self):
-        return (f"{self.user.username}({self.user.id})->"
-                f"{self.author.username}({self.author.id})")
+        return (f"{self.user.username}({self.user.pk})->"
+                f"{Subscribe.user.username}({self.subscribe.pk})")

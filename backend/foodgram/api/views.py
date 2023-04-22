@@ -13,6 +13,7 @@ from djoser.views import UserViewSet as DefaultUserViewSet
 from .serializers import UserSerializer
 from .permisions import UserPermission
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.authtoken.models import Token
 from rest_framework.mixins import (CreateModelMixin,
                                    ListModelMixin,
@@ -20,11 +21,18 @@ from rest_framework.mixins import (CreateModelMixin,
 from rest_framework.viewsets import GenericViewSet
 from .serializers import SubscribeSerializer
 from users.models import Subscribe
+from recipes.models import Tag, Ingredient
+from api.serializers import TagSerializer, IngredientSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import IngredientFilter
+from .paginators import PageLimitedPaginator
 
 User = get_user_model()
 
 
 class UserViewSet(DefaultUserViewSet):
+
+    pagination_class = PageLimitedPaginator
 
     @action(["get",], detail=False, permission_classes=(IsAuthenticated,))
     def me(self, request, *args, **kwargs):
@@ -43,3 +51,15 @@ class UserViewSet(DefaultUserViewSet):
             user=self.request.user, subscribe=subscribe_user)
         serialiser.save()
         return Response(serialiser.data, status=status.HTTP_200_OK)
+
+
+class TagViewSet(ReadOnlyModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+
+
+class IngredientViewSet(ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter

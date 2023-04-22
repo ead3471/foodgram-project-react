@@ -4,6 +4,12 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from users.models import Subscribe
 from django.shortcuts import get_object_or_404
+from recipes.models import (Tag,
+                            Ingredient,
+                            Recipe,
+                            RecipeIngredient,
+                            Favorites,
+                            ShopingCart)
 
 User = get_user_model()
 
@@ -27,6 +33,18 @@ class UserSerializer(ModelSerializer):
 
     def get_is_subscribed(self, obj):
         return True
+
+
+class TagSerializer(ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class IngredientSerializer(ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
 
 
 class SubscribeSerializer(ModelSerializer):
