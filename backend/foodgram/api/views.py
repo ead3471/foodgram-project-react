@@ -27,6 +27,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import IngredientFilter
 from .paginators import PageLimitedPaginator
 
+
 User = get_user_model()
 
 

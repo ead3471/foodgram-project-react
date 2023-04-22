@@ -1,12 +1,27 @@
 from django.contrib import admin
-from django.contrib.admin import ModelAdmin, TabularInline, register
+from django.contrib.admin import ModelAdmin, TabularInline, register, StackedInline, display
 from .models import *
+from django.utils.html import format_html
 
 
 @register(Tag)
 class TagAdmin(ModelAdmin):
-    list_display = ('name', 'color', 'slug')
+    list_display = ('name', 'colored_cell', 'slug')
     search_fields = ('name', 'color')
+
+    @display(description='Color')
+    def colored_cell(self, obj: Tag):
+        return format_html(
+            '<span style="color:{};"><b>{}<b></span>',
+            obj.color,
+            obj.color
+        )
+
+    # def colored(self, obj: Tag):
+    #     return format_html(
+    #         '<span style="color: {};">{}</span>',
+    #         obj.color, obj.color
+    #     )
 
 
 @register(Ingredient)
@@ -18,6 +33,7 @@ class IngredientAdmin(ModelAdmin):
 
 class RecipeIngredientInline(TabularInline):
     model = RecipeIngredient
+    # fields = ('ingredient_name', 'amount')
     extra = 1
 
 
