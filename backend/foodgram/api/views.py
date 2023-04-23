@@ -1,31 +1,28 @@
 
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
-from rest_framework.filters import SearchFilter
 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
 from djoser.views import UserViewSet as DefaultUserViewSet
-from .serializers import UserSerializer
-from .permisions import UserPermission
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.authtoken.models import Token
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework.mixins import (CreateModelMixin,
                                    ListModelMixin,
                                    DestroyModelMixin)
-from rest_framework.viewsets import GenericViewSet
-from .serializers import SubscribeSerializer
-from users.models import Subscribe
-from recipes.models import Tag, Ingredient
-from api.serializers import TagSerializer, IngredientSerializer
+
+from recipes.models import Tag, Ingredient, Recipe, Favorites, ShopingCart
+from api.serializers import (TagSerializer,
+                             IngredientSerializer,
+                             SubscribeSerializer,
+                             RecipeSerializer)
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import IngredientFilter
 from .paginators import PageLimitedPaginator
+from .permissions import IsAuthoOrReadOnly
 
 
 User = get_user_model()
@@ -64,3 +61,10 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
+
+
+class RecipeViewSet(ModelViewSet):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    pagination_class = PageLimitedPaginator
+    permission_classes = (IsAuthoOrReadOnly,)

@@ -22,8 +22,8 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(max_length=200,
                             verbose_name='Ingredient name')
-    measure_unit = models.CharField(max_length=20,
-                                    verbose_name='Ingredient measure unit')
+    measurement_unit = models.CharField(max_length=20,
+                                        verbose_name='Ingredient measure unit')
 
     def __str__(self) -> str:
         return f'{self.name}, {self.measure_unit}'
@@ -37,9 +37,9 @@ class Recipe(models.Model):
     name = models.CharField(max_length=200,
                             verbose_name='Recipe name')
     image = models.ImageField(upload_to='recipies/', verbose_name='Food photo')
-    description = models.TextField()
-    coocking_time = models.IntegerField(validators=(MinValueValidator(1),),
-                                        verbose_name='Coocking time, minutes')
+    text = models.TextField()
+    cooking_time = models.IntegerField(validators=(MinValueValidator(1),),
+                                       verbose_name='Coocking time, minutes')
     ingredients = models.ManyToManyField(Ingredient,
                                          through='RecipeIngredient',
                                          verbose_name='Ingredients',
@@ -60,10 +60,11 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(Ingredient,
                                    on_delete=models.CASCADE,
                                    verbose_name='Ingredient',
-                                   related_name='recipes')
+                                   related_name='recipe_ingredients')
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
-                               verbose_name='Recipe'
+                               verbose_name='Recipe',
+                               related_name='recipe_ingredients'
                                )
     amount = models.PositiveIntegerField(verbose_name='Ingredient amount')
 
@@ -78,7 +79,8 @@ class RecipeIngredient(models.Model):
 class Favorites(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
-                             verbose_name='User')
+                             verbose_name='User',
+                             related_name='favorites')
     recipe = models.ForeignKey(Recipe,
                                related_name='in_favorites',
                                on_delete=models.CASCADE,

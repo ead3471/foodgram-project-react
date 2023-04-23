@@ -11,6 +11,10 @@ from recipes.models import (Tag,
                             Favorites,
                             ShopingCart)
 
+from drf_extra_fields.fields import Base64ImageField
+from django.contrib.auth.models import AnonymousUser
+
+
 User = get_user_model()
 
 
@@ -47,11 +51,52 @@ class IngredientSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class RecipeIngredientSerializer(ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit')
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
 class RecipeDescriptionSerializer(ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'coocking_time')
         read_only_fields = '__all__'
+
+
+class RecipeSerializer(ModelSerializer):
+    author = UserSerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = RecipeIngredientSerializer(
+        many=True, source='recipe_ingredients')
+    image = Base64ImageField()
+    is_favorited = SerializerMethodField()
+    is_in_shopping_card = SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = ('author', 'name', 'tags', 'ingredients',
+                  'image', 'text', 'cooking_time', 'is_favorited', 'is_in_shopping_card')
+
+    def get_is_favorited(self, recipe):
+        current_user = self.context['request'].user
+        print(type(current_user))
+        if current_user.is_anonymous:
+            return False
+        else:
+            return current_user.favorites.filter(recipe=recipe).exists()
+
+    def get_is_in_shopping_card(self, recipe):
+        current_user = self.context['request'].user
+        if current_user.is_anonymous:
+            return False
+        else:
+            return current_user.purchases.filter(recipe=recipe).exists()
 
 
 class SubscribeSerializer(ModelSerializer):

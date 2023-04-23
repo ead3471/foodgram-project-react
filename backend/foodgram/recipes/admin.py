@@ -17,17 +17,11 @@ class TagAdmin(ModelAdmin):
             obj.color
         )
 
-    # def colored(self, obj: Tag):
-    #     return format_html(
-    #         '<span style="color: {};">{}</span>',
-    #         obj.color, obj.color
-    #     )
-
 
 @register(Ingredient)
 class IngredientAdmin(ModelAdmin):
-    list_display = ('name', 'measure_unit')
-    search_fields = ('name', 'measure_unit')
+    list_display = ('name', 'measurement_unit')
+    search_fields = ('name', 'measurement_unit')
     list_filter = ('name',)
 
 
