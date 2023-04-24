@@ -81,15 +81,13 @@ class RecipeDescriptionSerializer(ModelSerializer):
 class GetRecipeSerializer(ModelSerializer):
     author = UserSerializer(read_only=True)
     tags = TagSerializer(many=True, source='tag')
-    ingredients = GetRecipeIngredientSerializer(
-        many=True, source='recipe_ingredients')
-    # image = Base64ImageField(required=False)
+    ingredients = GetRecipeIngredientSerializer(many=True)
     is_favorited = SerializerMethodField()
     is_in_shopping_card = SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('author', 'name', 'tags', 'ingredients',
+        fields = ('id', 'author', 'name', 'tags', 'ingredients',
                   'image', 'text', 'cooking_time', 'is_favorited', 'is_in_shopping_card')
 
     def get_is_favorited(self, recipe):
@@ -139,13 +137,8 @@ class CreateRecipeSerializer(ModelSerializer):
                                            **validated_data)
 
         for recipe_ingredient in ingredients:
-            print(new_recipe)
-            print(recipe_ingredient)
             ingredient = recipe_ingredient["id"]
             amount = recipe_ingredient["amount"]
-
-            print(ingredient, amount)
-
             RecipeIngredient.objects.create(
                 recipe=new_recipe,
                 ingredient=ingredient,
@@ -154,6 +147,10 @@ class CreateRecipeSerializer(ModelSerializer):
         new_recipe.tag.add(*tags)
 
         return new_recipe
+
+    def update(self, instance, validated_data):
+
+        return super().update(instance, validated_data)
 
 
 class SubscribeSerializer(ModelSerializer):

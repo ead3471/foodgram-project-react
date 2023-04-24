@@ -40,12 +40,6 @@ class Recipe(models.Model):
     text = models.TextField()
     cooking_time = models.IntegerField(validators=(MinValueValidator(1),),
                                        verbose_name='Coocking time, minutes')
-    ingredients = models.ManyToManyField(Ingredient,
-                                         through='RecipeIngredient',
-                                         verbose_name='Ingredients',
-                                         null=True
-                                         # related_name='recipies'
-                                         )
     tag = models.ManyToManyField(Tag,
                                  verbose_name='Tags',
                                  related_name='recipies')
@@ -66,7 +60,7 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                verbose_name='Recipe',
-                               related_name='recipe_ingredients'
+                               related_name='ingredients'
                                )
     amount = models.PositiveIntegerField(
         verbose_name='Ingredient amount', default=1)
