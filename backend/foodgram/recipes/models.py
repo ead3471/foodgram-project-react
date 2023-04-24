@@ -26,7 +26,7 @@ class Ingredient(models.Model):
                                         verbose_name='Ingredient measure unit')
 
     def __str__(self) -> str:
-        return f'{self.name}, {self.measure_unit}'
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Recipe(models.Model):
@@ -43,7 +43,9 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(Ingredient,
                                          through='RecipeIngredient',
                                          verbose_name='Ingredients',
-                                         related_name='recipies')
+                                         null=True
+                                         # related_name='recipies'
+                                         )
     tag = models.ManyToManyField(Tag,
                                  verbose_name='Tags',
                                  related_name='recipies')
@@ -66,7 +68,8 @@ class RecipeIngredient(models.Model):
                                verbose_name='Recipe',
                                related_name='recipe_ingredients'
                                )
-    amount = models.PositiveIntegerField(verbose_name='Ingredient amount')
+    amount = models.PositiveIntegerField(
+        verbose_name='Ingredient amount', default=1)
 
     def __str__(self) -> str:
         return self.ingredient.name
@@ -99,12 +102,12 @@ class ShopingCart(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              verbose_name='User',
-                             related_name='purchases')
+                             related_name='shopping_carts')
 
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                verbose_name='Recipies',
-                               related_name='shopping_cards')
+                               related_name='shopping_carts')
 
     class Meta:
         ordering = ['user']

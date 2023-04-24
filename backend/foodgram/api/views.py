@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -18,9 +19,10 @@ from recipes.models import Tag, Ingredient, Recipe, Favorites, ShopingCart
 from api.serializers import (TagSerializer,
                              IngredientSerializer,
                              SubscribeSerializer,
-                             RecipeSerializer)
+                             GetRecipeSerializer,
+                             CreateRecipeSerializer)
 from django_filters.rest_framework import DjangoFilterBackend
-from .filters import IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthoOrReadOnly
 
@@ -64,7 +66,17 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    queryset = Recipe.objects.all().order_by('pk')
+    serializer_class = GetRecipeSerializer
     pagination_class = PageLimitedPaginator
     permission_classes = (IsAuthoOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return GetRecipeSerializer
+        else:
+            return CreateRecipeSerializer
+
+        return super().get_serializer_class()
