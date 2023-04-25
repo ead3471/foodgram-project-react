@@ -17,13 +17,14 @@ from rest_framework.mixins import (CreateModelMixin,
                                    DestroyModelMixin,
                                    )
 
-from recipes.models import Tag, Ingredient, Recipe, Favorites, ShopingCart
+from recipes.models import Tag, Ingredient, Recipe, Favorites, ShoppingCart
 from api.serializers import (TagSerializer,
                              IngredientSerializer,
                              SubscribeSerializer,
                              GetRecipeSerializer,
                              CreateRecipeSerializer,
-                             FavoritesSerializer)
+                             FavoritesSerializer,
+                             ShoppingCartSerializer)
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
@@ -83,6 +84,12 @@ class RecipeViewSet(ModelViewSet):
         else:
             return CreateRecipeSerializer
 
+    @action(
+        detail=False,
+    )
+    def download_shopping_cart(self, request):
+        pass
+
 
 class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
     queryset = Favorites.objects.all()
@@ -104,6 +111,32 @@ class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
         data = {'recipe_id': kwargs['recipe_id'],
                 'user': self.request.user}
         serializer = FavoritesSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ShoppingCartView(ListModelMixin, CreateModelMixin, DestroyModelMixin, GenericAPIView):
+    queryset = ShoppingCart.objects.all()
+    serializer_class = ShoppingCartSerializer
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ['post', 'delete']
+
+    def get_object(self):
+        recipe_id = self.kwargs.get('recipe_id')
+
+        favorite_record = get_object_or_404(
+            ShoppingCart, recipe=recipe_id, user=self.request.user)
+        return favorite_record
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {'recipe_id': kwargs['recipe_id'],
+                'user': self.request.user}
+        serializer = ShoppingCartSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

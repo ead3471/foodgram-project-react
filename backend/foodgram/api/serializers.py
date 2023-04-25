@@ -9,7 +9,7 @@ from recipes.models import (Tag,
                             Recipe,
                             RecipeIngredient,
                             Favorites,
-                            ShopingCart)
+                            ShoppingCart)
 
 from drf_extra_fields.fields import Base64ImageField
 from django.contrib.auth.models import AnonymousUser
@@ -74,8 +74,8 @@ class CreateRecipeIngredientSerializer(ModelSerializer):
 class RecipeDescriptionSerializer(ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'coocking_time')
-        read_only_fields = '__all__'
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class GetRecipeSerializer(ModelSerializer):
@@ -202,12 +202,6 @@ class FavoritesSerializer(ModelSerializer):
         model = Favorites
         fields = ('id', 'cooking_time', 'image', 'name')
 
-    # def get_recipe_id(self, favorite):
-    #     return self.context.get['recipe_id']
-
-    # def get_user_id(self, favorite):
-    #     return self.context.get['request'].user
-
     def validate(self, attrs):
         recipe_id = self.initial_data['recipe_id']
         recipe = get_object_or_404(Recipe, pk=recipe_id)
@@ -223,3 +217,30 @@ class FavoritesSerializer(ModelSerializer):
     def create(self, validated_data):
         print(validated_data)
         return Favorites.objects.create(user=validated_data['user'], recipe=validated_data['recipe'])
+
+
+class ShoppingCartSerializer(ModelSerializer):
+    id = serializers.ReadOnlyField(source='recipe.id')
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    image = serializers.CharField(source='recipe.image', read_only=True)
+    cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('id', 'cooking_time', 'image', 'name')
+
+    def validate(self, attrs):
+        recipe_id = self.initial_data['recipe_id']
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+        request_user = self.initial_data['user']
+
+        if ShoppingCart.objects.all().filter(recipe__id=recipe_id).filter(user=request_user).exists():
+            raise ValidationError('Already added to shopping cart!')
+
+        attrs['user'] = request_user
+        attrs['recipe'] = recipe
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        print(validated_data)
+        return ShoppingCart.objects.create(user=validated_data['user'], recipe=validated_data['recipe'])

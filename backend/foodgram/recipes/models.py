@@ -92,7 +92,7 @@ class Favorites(models.Model):
         verbose_name_plural = 'Favorites'
 
 
-class ShopingCart(models.Model):
+class ShoppingCart(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              verbose_name='User',

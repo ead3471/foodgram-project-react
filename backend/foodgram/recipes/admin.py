@@ -38,7 +38,7 @@ class RecipeIngredientAdmin(ModelAdmin):
     list_filter = ('ingredient',)
 
 
-@register(ShopingCart)
+@register(ShoppingCart)
 class ShoppingCartAdmin(ModelAdmin):
     list_display = ('user', 'recipe')
     search_fields = ('user',)
