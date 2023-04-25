@@ -1,7 +1,9 @@
 
 from rest_framework.decorators import action
+from django.db.models import Sum
+from datetime import datetime
 from django.contrib.auth import get_user_model
-
+from django.http.response import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import SAFE_METHODS
@@ -11,13 +13,13 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DefaultUserViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
+from rest_framework.viewsets import (ReadOnlyModelViewSet,
+                                     ModelViewSet,
+                                     GenericViewSet)
 from rest_framework.mixins import (CreateModelMixin,
                                    ListModelMixin,
-                                   DestroyModelMixin,
-                                   )
-
-from recipes.models import Tag, Ingredient, Recipe, Favorites, ShoppingCart
+                                   DestroyModelMixin)
+from recipes.models import Tag, Ingredient, Recipe, Favorites, ShoppingCart, RecipeIngredient
 from api.serializers import (TagSerializer,
                              IngredientSerializer,
                              SubscribeSerializer,
@@ -30,6 +32,11 @@ from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthoOrReadOnly
 from rest_framework.generics import GenericAPIView
+import json
+from django.core import serializers
+import io
+from .reports import create_pdf
+from django.http import FileResponse
 
 
 User = get_user_model()
@@ -86,9 +93,58 @@ class RecipeViewSet(ModelViewSet):
 
     @action(
         detail=False,
+        methods=('get',),
+        permission_classes=(IsAuthenticated,)
+    )
+    def download_shopping_cart_json(self, request):
+
+        shopping_cart = (RecipeIngredient.
+                         objects.
+                         all().
+                         filter(
+                             recipe__shopping_carts__user=request.user).
+                         values('ingredient__name',
+                                'ingredient__measurement_unit').
+                         annotate(total=Sum('amount')))
+
+        data = {[{'igredient': ingredient['ingredient__name'],
+                  'unit':ingredient['ingredient__measurement_unit'],
+                  'total':ingredient['total']} for ingredient in shopping_cart]}
+
+        result_json = {""}
+
+        response = HttpResponse(
+            result_json,
+            content_type='.txt; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename=shoppings.txt'
+
+        return response
+
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
-        pass
+        file_name = f'ShoppingList_{datetime.now().strftime("%m_%d_%Y_%H:%M")}.pdf'
+        shopping_cart = (RecipeIngredient.
+                         objects.
+                         all().
+                         filter(
+                             recipe__shopping_carts__user=request.user).
+                         values('ingredient__name',
+                                'ingredient__measurement_unit').
+                         annotate(total=Sum('amount')))
+
+        pdf = create_pdf(ingredients=shopping_cart)
+        pdf.seek(0)
+        responce = FileResponse(
+            pdf,
+            filename=file_name,
+            content_type='application/pdf')
+
+        return responce
 
 
 class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
