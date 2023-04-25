@@ -10,21 +10,25 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DefaultUserViewSet
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
 from rest_framework.mixins import (CreateModelMixin,
                                    ListModelMixin,
-                                   DestroyModelMixin)
+                                   DestroyModelMixin,
+                                   )
 
 from recipes.models import Tag, Ingredient, Recipe, Favorites, ShopingCart
 from api.serializers import (TagSerializer,
                              IngredientSerializer,
                              SubscribeSerializer,
                              GetRecipeSerializer,
-                             CreateRecipeSerializer)
+                             CreateRecipeSerializer,
+                             FavoritesSerializer)
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthoOrReadOnly
+from rest_framework.generics import GenericAPIView
 
 
 User = get_user_model()
@@ -79,4 +83,28 @@ class RecipeViewSet(ModelViewSet):
         else:
             return CreateRecipeSerializer
 
-        return super().get_serializer_class()
+
+class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
+    queryset = Favorites.objects.all()
+    serializer_class = FavoritesSerializer
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ['post', 'delete']
+
+    def get_object(self):
+        recipe_id = self.kwargs.get('recipe_id')
+
+        favorite_record = get_object_or_404(
+            Favorites, recipe=recipe_id, user=self.request.user)
+        return favorite_record
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {'recipe_id': kwargs['recipe_id'],
+                'user': self.request.user}
+        serializer = FavoritesSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

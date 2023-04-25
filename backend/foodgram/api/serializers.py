@@ -158,6 +158,13 @@ class CreateRecipeSerializer(ModelSerializer):
 
         return super().update(instance, validated_data)
 
+    def validate(self, data):
+        new_ingredints_in_recipe: dict[str, str] = data['ingredients']
+        if len(set([value['id'] for value in new_ingredints_in_recipe])) != len(new_ingredints_in_recipe):
+            raise ValidationError(
+                'The ingredients list should not contain the same elements')
+        return super().validate(data)
+
 
 class SubscribeSerializer(ModelSerializer):
 
@@ -183,3 +190,36 @@ class SubscribeSerializer(ModelSerializer):
                 filter(subscribe=subscribe_user).exists()):
             raise ValidationError("Follow already exists!")
         return user_id
+
+
+class FavoritesSerializer(ModelSerializer):
+    id = serializers.ReadOnlyField(source='recipe.id')
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    image = serializers.CharField(source='recipe.image', read_only=True)
+    cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
+
+    class Meta:
+        model = Favorites
+        fields = ('id', 'cooking_time', 'image', 'name')
+
+    # def get_recipe_id(self, favorite):
+    #     return self.context.get['recipe_id']
+
+    # def get_user_id(self, favorite):
+    #     return self.context.get['request'].user
+
+    def validate(self, attrs):
+        recipe_id = self.initial_data['recipe_id']
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+        request_user = self.initial_data['user']
+
+        if Favorites.objects.all().filter(recipe__id=recipe_id).filter(user=request_user).exists():
+            raise ValidationError('Already added to favorites!')
+
+        attrs['user'] = request_user
+        attrs['recipe'] = recipe
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        print(validated_data)
+        return Favorites.objects.create(user=validated_data['user'], recipe=validated_data['recipe'])
