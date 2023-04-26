@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DefaultUserViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView
 from rest_framework.viewsets import (ReadOnlyModelViewSet,
                                      ModelViewSet,
                                      GenericViewSet,
@@ -191,7 +191,7 @@ class SubscriptionsView(ListAPIView):
         return {"request": self.request}
 
 
-class SubscribeView(APIView):
+class SubscribeView_1(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = SubscribeSerializer
 
@@ -212,3 +212,22 @@ class SubscribeView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubscribeView(CreateAPIView, DestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = SubscribeSerializer
+
+    def get_object(self):
+        subscribe_id = self.kwargs.get('user_id')
+        return get_object_or_404(Subscribe,
+                                 user=self.request.user,
+                                 subscribe__id=subscribe_id)
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = self.get_serializer_class()(
+            data={'user': self.request.user.id,
+                  'subscribe': self.kwargs['user_id']},
+            context={'request': self.request}
+        )
+        return serializer
