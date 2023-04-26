@@ -232,23 +232,20 @@ class FavoritesSerializer(ModelSerializer):
 
     class Meta:
         model = Favorites
-        fields = ('id', 'cooking_time', 'image', 'name')
+        fields = ('id', 'cooking_time', 'image', 'name', 'recipe', 'user')
+        extra_kwargs = {'user': {'write_only': True},
+                        'recipe': {'write_only': True}}
 
     def validate(self, attrs):
-        print(self.context)
-        recipe_id = self.initial_data['recipe_id']
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        request_user = self.initial_data['user']
+        user = attrs['user']
+        recipe = attrs['recipe']
 
-        if Favorites.objects.all().filter(recipe__id=recipe_id).filter(user=request_user).exists():
+        if Favorites.objects.all().filter(recipe=recipe).filter(user=user).exists():
             raise ValidationError('Already added to favorites!')
+        return attrs
 
-        attrs['user'] = request_user
-        attrs['recipe'] = recipe
-        return super().validate(attrs)
-
-    def create(self, validated_data):
-        return Favorites.objects.create(user=validated_data['user'], recipe=validated_data['recipe'])
+    # def create(self, validated_data):
+    #     return Favorites.objects.create(user=validated_data['user'], recipe=validated_data['recipe'])
 
 
 class ShoppingCartSerializer(ModelSerializer):

@@ -131,28 +131,30 @@ class RecipeViewSet(ModelViewSet):
         return responce
 
 
-class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
+class FavoritesView(CreateAPIView, DestroyAPIView):
     serializer_class = FavoritesSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
+        return get_object_or_404(Favorites, recipe=recipe_id, user=self.request.user)
 
-        favorite_record = get_object_or_404(
-            Favorites, recipe=recipe_id, user=self.request.user)
-        return favorite_record
+    def get_serializer(self, *args, **kwargs):
+        serializer = self.get_serializer_class()(
+            data={'user': self.request.user.id,
+                  'recipe': self.kwargs['recipe_id']},
+            context={'request': self.request}
+        )
+        return serializer
 
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(self, request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        data = {'recipe_id': kwargs['recipe_id'],
-                'user': self.request.user}
-        serializer = self.get_serializer_class(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, *args, **kwargs):
+    #     data = {'recipe_id': kwargs['recipe_id'],
+    #             'user': self.request.user}
+    #     serializer = self.get_serializer_class(data=data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ShoppingCartView(ListModelMixin, CreateModelMixin, DestroyModelMixin, GenericAPIView):
@@ -189,29 +191,6 @@ class SubscriptionsView(ListAPIView):
 
     def get_serializer_context(self):
         return {"request": self.request}
-
-
-class SubscribeView_1(APIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = SubscribeSerializer
-
-    def delete(self, request, user_id):
-        subscription = get_object_or_404(
-            Subscribe, user=request.user, subscribe__pk=user_id)
-        subscription.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def post(self, request, user_id):
-        print(request.GET)
-        print(request.GET.get('recipes_limit'))
-        data = {'user': self.request.user.id,
-                'subscribe': user_id}
-        serializer = SubscribeSerializer(
-            data=data, context={'request': self.request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubscribeView(CreateAPIView, DestroyAPIView):

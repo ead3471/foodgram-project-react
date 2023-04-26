@@ -88,7 +88,7 @@ class Favorites(models.Model):
 
     class Meta:
         ordering = ['user_id']
-        unique_together = ['user', 'recipe']
+        # unique_together = ['user', 'recipe']
         verbose_name_plural = 'Favorites'
 
 
