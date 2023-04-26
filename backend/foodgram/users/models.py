@@ -34,8 +34,8 @@ class Subscribe(models.Model):
                              related_name='subscribings')  # подписки юзера
     subscribe = models.ForeignKey(User,
                                   on_delete=models.CASCADE,
-                                  related_name='subscrubers')  # подписчики юзера
+                                  related_name='subscribers')  # подписчики юзера
 
     def __str__(self):
         return (f"{self.user.username}({self.user.pk})->"
-                f"{Subscribe.user.username}({self.subscribe.pk})")
+                f"{self.subscribe.username}({self.subscribe.pk})")

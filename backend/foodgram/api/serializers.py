@@ -12,7 +12,6 @@ from recipes.models import (Tag,
                             ShoppingCart)
 
 from drf_extra_fields.fields import Base64ImageField
-from django.contrib.auth.models import AnonymousUser
 
 
 User = get_user_model()
@@ -167,29 +166,62 @@ class CreateRecipeSerializer(ModelSerializer):
 
 
 class SubscribeSerializer(ModelSerializer):
+    email = serializers.ReadOnlyField(source='subscribe.email')
+    id = serializers.ReadOnlyField(source='subscribe.id')
+    username = serializers.ReadOnlyField(source='subscribe.username')
+    first_name = serializers.ReadOnlyField(source='subscribe.first_name')
+    last_name = serializers.ReadOnlyField(source='subscribe.last_name')
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Subscribe
-        fields = ['user', 'subscribe']
+        fields = ('email',
+                  'id',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'recipes',
+                  'is_subscribed',
+                  'recipes',
+                  'recipes_count',
+                  'user',
+                  'subscribe')
+        extra_kwargs = {'user': {'write_only': True},
+                        'subscribe': {'write_only': True}}
+
+    def get_is_subscribed(self, subscribe_obj: Subscribe):
+        return True
+
+    def get_recipes_count(self, subscribe_obj: Subscribe):
+        return subscribe_obj.subscribe.recipes.count()
+
+    def get_recipes(self, subscribe_obj: Subscribe):
+        limit = self.context['request'].GET.get('recipes_limit')
+        if limit:
+            recipes = Recipe.objects.filter(
+                author=subscribe_obj.subscribe)[:int(limit)]
+        else:
+            recipes = Recipe.objects.filter(author=subscribe_obj.subscribe)
+        serializer = RecipeDescriptionSerializer(recipes, many=True)
+        return serializer.data
 
     def validate(self, attrs):
-        print(str(attrs))
-        return super().validate(attrs)
+        current_user = attrs['user']
+        subscribe_user = attrs['subscribe']
+        limit = self.context['request'].GET.get('recipes_limit')
+        if limit is not None:
+            if not limit.isnumeric():
+                raise ValidationError('recipes_limit must be a number!')
 
-    def validate_subscribe(self, user_id: int):
-        print(self.context.get('request').query_params.get('recipes_limit', None))
+        if Subscribe.objects.all().filter(user=current_user, subscribe=subscribe_user).exists():
+            raise ValidationError('This subscription is already registered')
 
-        subscribe_user = get_object_or_404(User, user_id)
-        current_user = self.context.get('request').user
-        if current_user == subscribe_user:
-            raise ValidationError("Subscribe to yourself is prohbited!")
+        if subscribe_user == current_user:
+            raise ValidationError('Subscribing to yourself is not allowed!')
 
-        if (Subscribe.
-            objects.
-            filter(user=current_user).
-                filter(subscribe=subscribe_user).exists()):
-            raise ValidationError("Follow already exists!")
-        return user_id
+        return attrs
 
 
 class FavoritesSerializer(ModelSerializer):
@@ -203,6 +235,7 @@ class FavoritesSerializer(ModelSerializer):
         fields = ('id', 'cooking_time', 'image', 'name')
 
     def validate(self, attrs):
+        print(self.context)
         recipe_id = self.initial_data['recipe_id']
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         request_user = self.initial_data['user']
@@ -215,7 +248,6 @@ class FavoritesSerializer(ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        print(validated_data)
         return Favorites.objects.create(user=validated_data['user'], recipe=validated_data['recipe'])
 
 

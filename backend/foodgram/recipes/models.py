@@ -33,23 +33,23 @@ class Recipe(models.Model):
 
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
-                               related_name='recipies')
+                               related_name='recipes')
     name = models.CharField(max_length=200,
                             verbose_name='Recipe name')
-    image = models.ImageField(upload_to='recipies/', verbose_name='Food photo')
+    image = models.ImageField(upload_to='recipes/', verbose_name='Food photo')
     text = models.TextField()
     cooking_time = models.IntegerField(validators=(MinValueValidator(1),),
                                        verbose_name='Coocking time, minutes')
     tag = models.ManyToManyField(Tag,
                                  verbose_name='Tags',
-                                 related_name='recipies')
+                                 related_name='recipes')
 
     def __str__(self) -> str:
         return self.name
 
     class Meta:
         verbose_name = 'Recipe'
-        verbose_name_plural = 'Recipies'
+        verbose_name_plural = 'Recipes'
 
 
 class RecipeIngredient(models.Model):
@@ -100,7 +100,7 @@ class ShoppingCart(models.Model):
 
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
-                               verbose_name='Recipies',
+                               verbose_name='Recipes',
                                related_name='shopping_carts')
 
     class Meta:

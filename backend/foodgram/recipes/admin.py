@@ -51,7 +51,7 @@ class FavoritesAdmin(ModelAdmin):
 
 
 @register(Recipe)
-class RecipiesAdmin(ModelAdmin):
+class RecipesAdmin(ModelAdmin):
     readonly_fields = ('in_favorites_count',)
 
     inlines = (RecipeIngredientInline,)

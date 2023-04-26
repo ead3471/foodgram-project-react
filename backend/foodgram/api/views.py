@@ -13,12 +13,15 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DefaultUserViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.viewsets import (ReadOnlyModelViewSet,
                                      ModelViewSet,
-                                     GenericViewSet)
+                                     GenericViewSet,
+                                     )
 from rest_framework.mixins import (CreateModelMixin,
                                    ListModelMixin,
                                    DestroyModelMixin)
+
 from recipes.models import Tag, Ingredient, Recipe, Favorites, ShoppingCart, RecipeIngredient
 from api.serializers import (TagSerializer,
                              IngredientSerializer,
@@ -37,6 +40,7 @@ from django.core import serializers
 import io
 from .reports import create_pdf
 from django.http import FileResponse
+from users.models import Subscribe
 
 
 User = get_user_model()
@@ -50,19 +54,6 @@ class UserViewSet(DefaultUserViewSet):
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)
-
-    @action(
-        methods=['post',],
-        detail=True,
-        permission_classes=(IsAuthenticated,),
-        url_path='(?P<subscribe_user_id>[^/.]+)/subscribe'
-    )
-    def subscribe(self, request, subscribe_user_id: int):
-        subscribe_user = get_object_or_404(User, subscribe_user_id)
-        serialiser = SubscribeSerializer(
-            user=self.request.user, subscribe=subscribe_user)
-        serialiser.save()
-        return Response(serialiser.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -106,13 +97,6 @@ class RecipeViewSet(ModelViewSet):
                          values('ingredient__name',
                                 'ingredient__measurement_unit').
                          annotate(total=Sum('amount')))
-
-        data = {[{'igredient': ingredient['ingredient__name'],
-                  'unit':ingredient['ingredient__measurement_unit'],
-                  'total':ingredient['total']} for ingredient in shopping_cart]}
-
-        result_json = {""}
-
         response = HttpResponse(
             result_json,
             content_type='.txt; charset=utf-8'
@@ -148,10 +132,8 @@ class RecipeViewSet(ModelViewSet):
 
 
 class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
-    queryset = Favorites.objects.all()
     serializer_class = FavoritesSerializer
     permission_classes = (IsAuthenticated,)
-    http_method_names = ['post', 'delete']
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
@@ -166,7 +148,7 @@ class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
     def post(self, request, *args, **kwargs):
         data = {'recipe_id': kwargs['recipe_id'],
                 'user': self.request.user}
-        serializer = FavoritesSerializer(data=data)
+        serializer = self.get_serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -174,10 +156,8 @@ class FavoritesView(CreateModelMixin, DestroyModelMixin, GenericAPIView):
 
 
 class ShoppingCartView(ListModelMixin, CreateModelMixin, DestroyModelMixin, GenericAPIView):
-    queryset = ShoppingCart.objects.all()
     serializer_class = ShoppingCartSerializer
     permission_classes = (IsAuthenticated,)
-    http_method_names = ['post', 'delete']
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
@@ -192,7 +172,42 @@ class ShoppingCartView(ListModelMixin, CreateModelMixin, DestroyModelMixin, Gene
     def post(self, request, *args, **kwargs):
         data = {'recipe_id': kwargs['recipe_id'],
                 'user': self.request.user}
-        serializer = ShoppingCartSerializer(data=data)
+        serializer = self.get_serializer_class()(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubscriptionsView(ListAPIView):
+    pagination_class = PageLimitedPaginator
+    serializer_class = SubscribeSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Subscribe.objects.filter(user=self.request.user)
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+
+class SubscribeView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = SubscribeSerializer
+
+    def delete(self, request, user_id):
+        subscription = get_object_or_404(
+            Subscribe, user=request.user, subscribe__pk=user_id)
+        subscription.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def post(self, request, user_id):
+        print(request.GET)
+        print(request.GET.get('recipes_limit'))
+        data = {'user': self.request.user.id,
+                'subscribe': user_id}
+        serializer = SubscribeSerializer(
+            data=data, context={'request': self.request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
