@@ -9,7 +9,7 @@ from api.views import (UserViewSet,
                        ShoppingCartView,
                        SubscribeView,
                        SubscriptionsView,
-                       ShoppingCartWithRender)
+                       ShoppingCartRenderView)
 
 router_api = DefaultRouter()
 router_api.register(r'users', UserViewSet)
@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.authtoken')),
 
     path(r'api/recipes/download_shopping_cart/',
-         ShoppingCartWithRender.as_view(), name='shopping_cart'),
+         ShoppingCartRenderView.as_view(), name='shopping_cart'),
 
     path('api/', include(router_api.urls)),
 

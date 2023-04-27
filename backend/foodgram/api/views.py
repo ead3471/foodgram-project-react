@@ -138,7 +138,7 @@ class SubscribeView(CreateAPIView, DestroyAPIView):
         return serializer
 
 
-class ShoppingCartWithRender(APIView):
+class ShoppingCartRenderView(APIView):
     renderer_classes = [ShoppingListToPDFRenderer]
 
     def get(self, request, format=None):
