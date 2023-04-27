@@ -1,7 +1,8 @@
-from django.contrib import admin
-from django.contrib.admin import ModelAdmin, TabularInline, register, StackedInline, display
-from .models import *
+from django.contrib.admin import ModelAdmin, TabularInline, display, register
 from django.utils.html import format_html
+
+from .models import (Favorites, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
 
 
 @register(Tag)

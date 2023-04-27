@@ -1,38 +1,30 @@
 
-from rest_framework.decorators import action
-from django.db.models import Sum
 from datetime import datetime
+
 from django.contrib.auth import get_user_model
-from django.http.response import HttpResponse
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import SAFE_METHODS
-from rest_framework import status
-from rest_framework.response import Response
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet as DefaultUserViewSet
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.generics import (ListAPIView,
-                                     CreateAPIView,
-                                     DestroyAPIView)
-from rest_framework.viewsets import (ReadOnlyModelViewSet,
-                                     ModelViewSet,)
-from recipes.models import Tag, Ingredient, Recipe, Favorites, ShoppingCart, RecipeIngredient
-from api.serializers import (TagSerializer,
-                             IngredientSerializer,
-                             SubscribeSerializer,
-                             GetRecipeSerializer,
-                             CreateRecipeSerializer,
-                             FavoritesSerializer,
-                             ShoppingCartSerializer)
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet as DefaultUserViewSet
+from rest_framework.decorators import action
+from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
+from api.serializers import (CreateRecipeSerializer, FavoritesSerializer,
+                             GetRecipeSerializer, IngredientSerializer,
+                             ShoppingCartSerializer, SubscribeSerializer,
+                             TagSerializer)
+from recipes.models import (Favorites, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
+from users.models import Subscribe
+
 from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthoOrReadOnly
-from users.models import Subscribe
 from .renders import ShoppingListToPDFRenderer
-
 
 User = get_user_model()
 
@@ -41,7 +33,7 @@ class UserViewSet(DefaultUserViewSet):
 
     pagination_class = PageLimitedPaginator
 
-    @action(["get",], detail=False, permission_classes=(IsAuthenticated,))
+    @action(["get", ], detail=False, permission_classes=(IsAuthenticated,))
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)
@@ -73,6 +65,9 @@ class RecipeViewSet(ModelViewSet):
         else:
             return CreateRecipeSerializer
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
 
 class FavoritesView(CreateAPIView, DestroyAPIView):
     serializer_class = FavoritesSerializer
@@ -80,7 +75,9 @@ class FavoritesView(CreateAPIView, DestroyAPIView):
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
-        return get_object_or_404(Favorites, recipe=recipe_id, user=self.request.user)
+        return get_object_or_404(Favorites,
+                                 recipe=recipe_id,
+                                 user=self.request.user)
 
     def get_serializer(self, *args, **kwargs):
         serializer = self.get_serializer_class()(

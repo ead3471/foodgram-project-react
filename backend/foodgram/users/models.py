@@ -31,10 +31,10 @@ class User(AbstractUser):
 class Subscribe(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
-                             related_name='subscribings')  # подписки юзера
+                             related_name='subscribings')  # подписки
     subscribe = models.ForeignKey(User,
                                   on_delete=models.CASCADE,
-                                  related_name='subscribers')  # подписчики юзера
+                                  related_name='subscribers')  # подписчики
 
     def __str__(self):
         return (f"{self.user.username}({self.user.pk})->"

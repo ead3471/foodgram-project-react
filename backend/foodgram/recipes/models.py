@@ -1,7 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator, RegexValidator
-
+from django.core.validators import (MinValueValidator,
+                                    RegexValidator,
+                                    MinLengthValidator)
+from django.db import models
 
 User = get_user_model()
 
@@ -9,10 +10,13 @@ User = get_user_model()
 class Tag(models.Model):
     name = models.CharField(max_length=20,
                             unique=True)
-    color = models.CharField(default='#FFFFFF',
-                             max_length=7,
-                             unique=True,
-                             validators=(RegexValidator(regex="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"),))
+    color = (models.
+             CharField(default='#FFFFFF',
+                       max_length=7,
+                       unique=True,
+                       validators=(
+                           RegexValidator(
+                               regex="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"),)))
     slug = models.SlugField()
 
     def __str__(self) -> str:
@@ -35,14 +39,20 @@ class Recipe(models.Model):
                                on_delete=models.CASCADE,
                                related_name='recipes')
     name = models.CharField(max_length=200,
-                            verbose_name='Recipe name')
+                            verbose_name='Recipe name',
+                            validators=(MinLengthValidator(1),))
     image = models.ImageField(upload_to='recipes/', verbose_name='Food photo')
     text = models.TextField()
     cooking_time = models.IntegerField(validators=(MinValueValidator(1),),
-                                       verbose_name='Coocking time, minutes')
+                                       verbose_name='Cooking time, minutes')
     tag = models.ManyToManyField(Tag,
                                  verbose_name='Tags',
                                  related_name='recipes')
+
+    pub_date = models.DateTimeField(
+        verbose_name='Publication Date',
+        auto_now_add=True,
+        editable=False,)
 
     def __str__(self) -> str:
         return self.name
@@ -50,6 +60,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Recipe'
         verbose_name_plural = 'Recipes'
+        ordering = ('-pub_date', )
 
 
 class RecipeIngredient(models.Model):

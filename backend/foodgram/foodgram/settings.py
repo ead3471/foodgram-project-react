@@ -10,11 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from djoser.permissions import CurrentUserOrAdminOrReadOnly
-from rest_framework.permissions import AllowAny
 from pathlib import Path
 import os
-from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -158,8 +156,8 @@ DJOSER = {
         'user_list': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        'user_list': ['rest_framework.permissions.AllowAny',],
-        'user': ['rest_framework.permissions.AllowAny',],
+        'user_list': ['rest_framework.permissions.AllowAny', ],
+        'user': ['rest_framework.permissions.AllowAny', ],
     },
 
 }

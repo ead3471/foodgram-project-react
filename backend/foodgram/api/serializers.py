@@ -1,18 +1,12 @@
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
+
+from recipes.models import (Favorites, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from users.models import Subscribe
-from django.shortcuts import get_object_or_404
-from recipes.models import (Tag,
-                            Ingredient,
-                            Recipe,
-                            RecipeIngredient,
-                            Favorites,
-                            ShoppingCart)
-
-from drf_extra_fields.fields import Base64ImageField
-
 
 User = get_user_model()
 
@@ -32,10 +26,16 @@ class UserSerializer(ModelSerializer):
             'is_subscribed'
         )
         extra_kwargs = {'password': {'write_only': True}}
-        read_only_fields = 'is_subscribed',
 
-    def get_is_subscribed(self, obj):
-        return True
+    def get_is_subscribed(self, user_obj):
+        current_user = self.context['request'].user
+
+        if current_user.is_authenticated:
+            return user_obj.id in (current_user.
+                                   subscribings.
+                                   all().
+                                   values_list("subscribe", flat=True))
+        return False
 
 
 class TagSerializer(ModelSerializer):
@@ -87,7 +87,9 @@ class GetRecipeSerializer(ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'author', 'name', 'tags', 'ingredients',
-                  'image', 'text', 'cooking_time', 'is_favorited', 'is_in_shopping_card')
+                  'image', 'text', 'cooking_time', 'is_favorited',
+                  'is_in_shopping_card')
+        read_only_fields = ('id',)
 
     def get_is_favorited(self, recipe):
         if self.context.get('request') is None:
@@ -123,7 +125,7 @@ class CreateRecipeSerializer(ModelSerializer):
                   'image', 'text', 'cooking_time', 'tags')
 
     def to_representation(self, instance):
-        return GetRecipeSerializer(instance).data
+        return GetRecipeSerializer(instance, context=self.context).data
 
     def create_new_ingredients(self, new_recipe, new_ingredients):
         ingredients = [
@@ -159,7 +161,10 @@ class CreateRecipeSerializer(ModelSerializer):
 
     def validate(self, data):
         new_ingredints_in_recipe: dict[str, str] = data['ingredients']
-        if len(set([value['id'] for value in new_ingredints_in_recipe])) != len(new_ingredints_in_recipe):
+        unique_elements_number = len(
+            set([value['id'] for value
+                 in new_ingredints_in_recipe]))
+        if unique_elements_number != len(new_ingredints_in_recipe):
             raise ValidationError(
                 'The ingredients list should not contain the same elements')
         return super().validate(data)
@@ -215,7 +220,10 @@ class SubscribeSerializer(ModelSerializer):
             if not limit.isnumeric():
                 raise ValidationError('recipes_limit must be a number!')
 
-        if Subscribe.objects.all().filter(user=current_user, subscribe=subscribe_user).exists():
+        if (Subscribe.
+            objects.
+            filter(user=current_user, subscribe=subscribe_user).
+                exists()):
             raise ValidationError('This subscription is already registered')
 
         if subscribe_user == current_user:
@@ -240,7 +248,10 @@ class FavoritesSerializer(ModelSerializer):
         user = attrs['user']
         recipe = attrs['recipe']
 
-        if Favorites.objects.all().filter(recipe=recipe).filter(user=user).exists():
+        if (Favorites.
+            objects.
+            filter(recipe=recipe, user=user).
+                exists()):
             raise ValidationError('Already added to favorites!')
         return attrs
 
@@ -261,7 +272,10 @@ class ShoppingCartSerializer(ModelSerializer):
         recipe = attrs['recipe']
         user = attrs['user']
 
-        if ShoppingCart.objects.all().filter(recipe=recipe).filter(user=user).exists():
+        if (ShoppingCart.
+            objects.
+            filter(recipe=recipe, user=user).
+                exists()):
             raise ValidationError('Already added to shopping cart!')
 
         return attrs

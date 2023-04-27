@@ -1,17 +1,14 @@
-from rest_framework.renderers import BaseRenderer
-from io import BytesIO
 import io
-from reportlab.lib.pagesizes import letter, A5
-from reportlab.platypus import Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import BaseDocTemplate, PageTemplate, KeepTogether
-from reportlab.platypus import Frame, PageTemplate
-from reportlab.lib.units import cm
-from reportlab.platypus import BaseDocTemplate
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase import ttfonts
-from django.conf import settings
 import os
+
+from django.conf import settings
+from reportlab.lib.pagesizes import A5
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics, ttfonts
+from reportlab.platypus import (BaseDocTemplate, Frame, KeepTogether,
+                                PageTemplate, Paragraph)
+from rest_framework.renderers import BaseRenderer
 
 
 class ShoppingListToPDFRenderer(BaseRenderer):
@@ -49,10 +46,13 @@ class ShoppingListToPDFRenderer(BaseRenderer):
                                               spaceBefore=12,
                                               spaceAfter=6)
 
-        L = [Paragraph("Лист покупок", paragraph_style),]
+        L = [Paragraph("Лист покупок", paragraph_style), ]
 
         for number, ingredient in enumerate(data):
-            text = f'__ {number+1}. {ingredient["ingredient__name"]} - {ingredient["total"]} {ingredient["ingredient__measurement_unit"]}'
+            text = (f'__ {number+1}.'
+                    f' {ingredient["ingredient__name"]}'
+                    f' - {ingredient["total"]}'
+                    f' {ingredient["ingredient__measurement_unit"]}')
             L.append(Paragraph(text, text_paragraph_style))
 
         story = L
