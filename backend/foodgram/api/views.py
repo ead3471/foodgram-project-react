@@ -13,15 +13,11 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DefaultUserViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView
+from rest_framework.generics import (ListAPIView,
+                                     CreateAPIView,
+                                     DestroyAPIView)
 from rest_framework.viewsets import (ReadOnlyModelViewSet,
-                                     ModelViewSet,
-                                     GenericViewSet,
-                                     )
-from rest_framework.mixins import (CreateModelMixin,
-                                   ListModelMixin,
-                                   DestroyModelMixin)
-
+                                     ModelViewSet,)
 from recipes.models import Tag, Ingredient, Recipe, Favorites, ShoppingCart, RecipeIngredient
 from api.serializers import (TagSerializer,
                              IngredientSerializer,
@@ -34,13 +30,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthoOrReadOnly
-from rest_framework.generics import GenericAPIView
-import json
-from django.core import serializers
-import io
-from .reports import create_pdf
-from django.http import FileResponse
 from users.models import Subscribe
+from .renders import ShoppingListToPDFRenderer
 
 
 User = get_user_model()
@@ -69,7 +60,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all().order_by('pk')
+    queryset = Recipe.objects.all()
     serializer_class = GetRecipeSerializer
     pagination_class = PageLimitedPaginator
     permission_classes = (IsAuthoOrReadOnly,)
@@ -81,54 +72,6 @@ class RecipeViewSet(ModelViewSet):
             return GetRecipeSerializer
         else:
             return CreateRecipeSerializer
-
-    @action(
-        detail=False,
-        methods=('get',),
-        permission_classes=(IsAuthenticated,)
-    )
-    def download_shopping_cart_json(self, request):
-
-        shopping_cart = (RecipeIngredient.
-                         objects.
-                         all().
-                         filter(
-                             recipe__shopping_carts__user=request.user).
-                         values('ingredient__name',
-                                'ingredient__measurement_unit').
-                         annotate(total=Sum('amount')))
-        response = HttpResponse(
-            result_json,
-            content_type='.txt; charset=utf-8'
-        )
-        response['Content-Disposition'] = f'attachment; filename=shoppings.txt'
-
-        return response
-
-    @action(
-        detail=False,
-        methods=('get',),
-        permission_classes=(IsAuthenticated,)
-    )
-    def download_shopping_cart(self, request):
-        file_name = f'ShoppingList_{datetime.now().strftime("%m_%d_%Y_%H:%M")}.pdf'
-        shopping_cart = (RecipeIngredient.
-                         objects.
-                         all().
-                         filter(
-                             recipe__shopping_carts__user=request.user).
-                         values('ingredient__name',
-                                'ingredient__measurement_unit').
-                         annotate(total=Sum('amount')))
-
-        pdf = create_pdf(ingredients=shopping_cart)
-        pdf.seek(0)
-        responce = FileResponse(
-            pdf,
-            filename=file_name,
-            content_type='application/pdf')
-
-        return responce
 
 
 class FavoritesView(CreateAPIView, DestroyAPIView):
@@ -147,38 +90,24 @@ class FavoritesView(CreateAPIView, DestroyAPIView):
         )
         return serializer
 
-    # def post(self, request, *args, **kwargs):
-    #     data = {'recipe_id': kwargs['recipe_id'],
-    #             'user': self.request.user}
-    #     serializer = self.get_serializer_class(data=data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class ShoppingCartView(ListModelMixin, CreateModelMixin, DestroyModelMixin, GenericAPIView):
+class ShoppingCartView(CreateAPIView, DestroyAPIView):
     serializer_class = ShoppingCartSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
-
         favorite_record = get_object_or_404(
             ShoppingCart, recipe=recipe_id, user=self.request.user)
         return favorite_record
 
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(self, request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        data = {'recipe_id': kwargs['recipe_id'],
-                'user': self.request.user}
-        serializer = self.get_serializer_class()(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_serializer(self, *args, **kwargs):
+        serializer = self.get_serializer_class()(
+            data={'user': self.request.user.id,
+                  'recipe': self.kwargs['recipe_id']},
+            context={'request': self.request}
+        )
+        return serializer
 
 
 class SubscriptionsView(ListAPIView):
@@ -210,3 +139,22 @@ class SubscribeView(CreateAPIView, DestroyAPIView):
             context={'request': self.request}
         )
         return serializer
+
+
+class ShoppingCartWithRender(APIView):
+    renderer_classes = [ShoppingListToPDFRenderer]
+
+    def get(self, request, format=None):
+        shopping_cart = (RecipeIngredient.
+                         objects.
+                         all().
+                         filter(
+                             recipe__shopping_carts__user=request.user).
+                         values('ingredient__name',
+                                'ingredient__measurement_unit').
+                         annotate(total=Sum('amount')))
+        file_name = f'Shopping_list_{datetime.now().strftime("%d_%m_%Y")}.pdf'
+        response = Response(shopping_cart,
+                            headers={'Content-Disposition':
+                                     f'attachment; filename={file_name}'})
+        return response
