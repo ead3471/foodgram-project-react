@@ -33,7 +33,9 @@ class UserViewSet(DefaultUserViewSet):
 
     pagination_class = PageLimitedPaginator
 
-    @action(["get", ], detail=False, permission_classes=(IsAuthenticated,))
+    @action(["get", ],
+            detail=False,
+            permission_classes=(IsAuthenticated,))
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)

@@ -29,12 +29,10 @@ class UserSerializer(ModelSerializer):
 
     def get_is_subscribed(self, user_obj):
         current_user = self.context['request'].user
-
         if current_user.is_authenticated:
-            return user_obj.id in (current_user.
-                                   subscribings.
-                                   all().
-                                   values_list("subscribe", flat=True))
+            return Subscribe.objects.filter(
+                user=current_user, subscribe=user_obj
+            ).exists()
         return False
 
 
@@ -220,10 +218,9 @@ class SubscribeSerializer(ModelSerializer):
             if not limit.isnumeric():
                 raise ValidationError('recipes_limit must be a number!')
 
-        if (Subscribe.
-            objects.
-            filter(user=current_user, subscribe=subscribe_user).
-                exists()):
+        if (Subscribe.objects.filter(
+            user=current_user, subscribe=subscribe_user
+        ).exists()):
             raise ValidationError('This subscription is already registered')
 
         if subscribe_user == current_user:
@@ -248,10 +245,9 @@ class FavoritesSerializer(ModelSerializer):
         user = attrs['user']
         recipe = attrs['recipe']
 
-        if (Favorites.
-            objects.
-            filter(recipe=recipe, user=user).
-                exists()):
+        if (Favorites.objects.filter(
+            recipe=recipe, user=user
+        ).exists()):
             raise ValidationError('Already added to favorites!')
         return attrs
 
@@ -272,10 +268,9 @@ class ShoppingCartSerializer(ModelSerializer):
         recipe = attrs['recipe']
         user = attrs['user']
 
-        if (ShoppingCart.
-            objects.
-            filter(recipe=recipe, user=user).
-                exists()):
+        if (ShoppingCart.objects.filter(
+            recipe=recipe, user=user
+        ).exists()):
             raise ValidationError('Already added to shopping cart!')
 
         return attrs
