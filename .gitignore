@@ -137,5 +137,8 @@ dmypy.json
 backend/foodgram/media/recipes/
 backend/.DS_Store
 .vscode/
+backend/foodgram/static/admin/
+backend/foodgram/static/rest_framework/
+
 
 
