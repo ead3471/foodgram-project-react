@@ -1,5 +1,4 @@
 version: '3.3'
-#name: foodgram
 
 services:
 
@@ -7,7 +6,6 @@ services:
     image: ead3471/foodgram-frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
-    container_name: frontend
 
   nginx:
     image: nginx:1.19.3
@@ -19,7 +17,6 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_value:/etc/nginx/html/static/
       - media_value:/etc/nginx/html/media/
-    container_name: nginx
     depends_on:
       - back
       - frontend
@@ -31,7 +28,6 @@ services:
       - db_value:/var/lib/postgresql/data/
     env_file:
       - ./.env
-    container_name: postgress
 
   back:
     image: ead3471/foodgram-backend:latest
@@ -45,7 +41,6 @@ services:
       - db
     env_file:
       - ./.env 
-    container_name: django-backend
 
 volumes:
   db_value:
