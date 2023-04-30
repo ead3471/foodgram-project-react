@@ -25,6 +25,9 @@ urlpatterns = [
     path(r'api/recipes/download_shopping_cart/',
          ShoppingCartRenderView.as_view(), name='shopping_cart'),
 
+    path(r'api/users/subscriptions/',
+         SubscriptionsView.as_view(), name='subscriptions'),
+
     path('api/', include(router_api.urls)),
 
     path(r'api/recipes/<recipe_id>/favorite/',
@@ -33,10 +36,11 @@ urlpatterns = [
     path(r'api/recipes/<recipe_id>/shopping_cart/',
          ShoppingCartView.as_view(), name='shopping_cart'),
 
+
+
     path(r'api/users/<user_id>/subscribe/',
          SubscribeView.as_view(), name='subscribe'),
 
-    path(r'api/users/subscriptions',
-         SubscriptionsView.as_view(), name='subscriptions'),
+
 
 ]
