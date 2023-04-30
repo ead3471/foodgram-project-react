@@ -72,6 +72,18 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
 
+    
+    - name: SCP files via ssh key
+      uses: appleboy/scp-action@master
+      env:
+        USERNAME: ${{ secrets.USERNAME }}
+        HOST: ${{ secrets.HOST }}
+        KEY: ${{ secrets.SSH_KEY }}
+      with:
+        source: './infra.docker-compose_local.yml'
+        target: '.'
+
+
       - name: copy docker compose
         uses: appleboy/scp-action@v0.1.4
         with:
