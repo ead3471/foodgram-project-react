@@ -70,19 +70,17 @@ jobs:
     runs-on: ubuntu-latest
     #needs: build_and_push_to_docker_hub
     if: github.ref == 'refs/heads/master'
-    steps:
-
-    
-      - name: SCP files via ssh key
-        uses: appleboy/scp-action@master
-        env:
-          USERNAME: ${{ secrets.USERNAME }}
-          HOST: ${{ secrets.HOST }}
-          KEY: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-        with:
-          source: './infra.docker-compose_local.yml'
-          target: './test'
+    steps:  
+      # - name: SCP files via ssh key
+      #   uses: appleboy/scp-action@master
+      #   env:
+      #     USERNAME: ${{ secrets.USERNAME }}
+      #     HOST: ${{ secrets.HOST }}
+      #     KEY: ${{ secrets.SSH_KEY }}
+      #     passphrase: ${{ secrets.PASSPHRASE }}
+      #   with:
+      #     source: './infra.docker-compose_local.yml'
+      #     target: './test'
 
 
       - name: Run a multi-line script
