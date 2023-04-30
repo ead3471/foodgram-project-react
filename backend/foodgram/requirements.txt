@@ -2,7 +2,7 @@
 django-extra-fields==3.0.2
 django-filter==23.1
 djoser==2.1.0
-#flake8==5.0.4
+flake8==5.0.4
 #isort==5.11.5
 #pip-chill==1.0.3
 psycopg2-binary==2.9.6
