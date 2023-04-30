@@ -90,6 +90,7 @@ jobs:
             sudo docker-compose stop
             sudo docker-compose rm back
             sudo docker-compose pull
+            rm .env
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
@@ -100,10 +101,10 @@ jobs:
             echo DJANGO_SUPERUSER_USERNAME =${{secrets.DJANGO_SUPERUSER_USERNAME}} >> .env
             echo DJANGO_SUPERUSER_PASSWORD =${{secrets.DJANGO_SUPERUSER_PASSWORD}} >> .env
             echo DJANGO_SUPERUSER_EMAIL =${{secrets.DJANGO_SUPERUSER_EMAIL}} >> .env
-            sudo docker-compose up -d
-            sudo docker-compose exec -T web python manage.py migrate
-            sudo docker-compose exec -T web python manage.py collectstatic --no-input
-            sudo docker-compose exec -T web python manage.py createsuperuser --noinput || true
+            sudo docker-compose up -d -V
+            sudo docker-compose exec -T back python manage.py migrate
+            sudo docker-compose exec -T back python manage.py collectstatic --no-input
+            sudo docker-compose exec -T back python manage.py createsuperuser --noinput || true
 
   # send_final_message:
   #   runs-on: ubuntu-latest
