@@ -85,14 +85,20 @@ jobs:
           target: './test'
 
 
-      - name: copy docker compose
-        uses: appleboy/scp-action@v0.1.4
+      - name: Run a multi-line script
+      run: |
+        mkdir ../build
+        cp -TR ./infra/docker-compose_local.yml ../build
+        tar -cvf deploy.tar ../build/
+
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          source: "infra/docker-compose_local.yml"
+          source: "deploy.tar"
           target: "test"
 
       - name: executing remote ssh commands to deploy
