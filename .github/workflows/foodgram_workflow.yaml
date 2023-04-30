@@ -79,6 +79,7 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           HOST: ${{ secrets.HOST }}
           KEY: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
         with:
           source: './infra.docker-compose_local.yml'
           target: './test'
