@@ -1,12 +1,11 @@
 version: '3.3'
-name: foodgram
+#name: foodgram
 
 services:
 
   frontend:
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      image: ead3471/foodgram-frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     container_name: frontend
@@ -36,7 +35,7 @@ services:
     container_name: postgress
 
   back:
-    image: ead3471/yamdb_final:latest
+    image: ead3471/foodgram-backend:latest
     restart: always
     volumes:
       - static_value:/app/static/
