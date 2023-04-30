@@ -81,7 +81,7 @@ jobs:
         KEY: ${{ secrets.SSH_KEY }}
       with:
         source: './infra.docker-compose_local.yml'
-        target: '.'
+        target: './test'
 
 
       - name: copy docker compose
