@@ -83,9 +83,8 @@ jobs:
       #     target: './test'
       - name: Run a multi-line script
         run: |
-          ls
           mkdir ../build
-          cp -TR ./infra/docker-compose_local.yml ../build
+          cp -TR infra/docker-compose_local.yml ../build
           tar -cvf deploy.tar ../build/
 
       - name: copy file via ssh password
