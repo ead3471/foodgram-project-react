@@ -136,7 +136,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            cd foodgram_setup
+            cd foodgram_setup/infra
             sudo docker-compose exec -T db sh 
             psql -U postgres 
             "COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADER true, DELIMITER ',', ENCODING 'UTF8');"
