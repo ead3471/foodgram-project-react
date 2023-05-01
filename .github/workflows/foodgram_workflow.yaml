@@ -122,4 +122,4 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             cd foodgram_setup
-            sudo docker-compose exec -T db psql -U postgress -d postgress -c '"COPY recipe_ingredient FROM 'data/ingredients.csv' WITH (FORMAT CSV, HEADER true, DELIMITER ',', ENCODING 'UTF8');"'
+            sudo docker-compose exec -T db psql -U postgress -d postgres -c '"COPY recipe_ingredient FROM 'data/ingredients.csv' WITH (FORMAT CSV, HEADER true, DELIMITER ',', ENCODING 'UTF8');"'
