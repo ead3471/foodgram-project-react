@@ -29,7 +29,7 @@ services:
   db:
     image: postgres:13.0-alpine
     ports: 
-      - "5432:5432"
+      - 5432:5432
     command: postgres -c listen_addresses=*
     restart: always
     volumes:
