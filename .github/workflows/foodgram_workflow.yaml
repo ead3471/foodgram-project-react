@@ -59,11 +59,35 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram-frontend:latest 
   
+  copy_file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Copy my_file.json to tests subdirectory
+        uses: appleboy/scp-action@v2.1.0
+        with:
+          host: example.com
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_KEY }}
+          port: 22
+          source: my_project/my_file.json
+          target: /path/to/my_project/tests/copy_of_my_file.json
+  
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
     if: github.ref == 'refs/heads/master'
-    steps:  
+    steps:
+      - name: Copy my_file.json to tests subdirectory
+        uses: appleboy/scp-action@v2.1.0
+        with:
+          host: example.com
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          source: data/ingredients.csv
+          target: /test/ingredients.csv
+
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
