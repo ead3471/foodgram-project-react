@@ -5,7 +5,7 @@ on: [push]
 jobs:
 
   copy_data:
-    name: Copy files into the server
+    name: Copy data files into the server
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -124,4 +124,4 @@ jobs:
             cd foodgram_setup
             sudo docker-compose exec -T db sh 
             psql -U postgres 
-            "COPY recipes_ingredient FROM 'data/ingredients.csv' WITH (FORMAT CSV, HEADER true, DELIMITER ',', ENCODING 'UTF8');"
+            "COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADER true, DELIMITER ',', ENCODING 'UTF8');"
