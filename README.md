@@ -38,7 +38,7 @@ nano .env
 
  - you can add load about 2000 ingredients to you db
  ```
-docker-compose -f docker-compose_local.yml exec -it db sh
+docker-compose -f docker-compose_local.yml exec db sh
 ```
  ```
  psql -U postgres
@@ -89,7 +89,7 @@ sudo docker-compose up -d --build
 
  - also you can add load about 2000 ingredients to you db
  ```
-sudo docker-compose exec -it db sh
+sudo docker-compose exec db sh
 ```
  ```
  psql -U postgres
