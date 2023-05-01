@@ -31,7 +31,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
-        source: "infra/docker-compose.yml"
+        source: "infra/"
         target: "./foodgram_setup/"
 
   tests:
