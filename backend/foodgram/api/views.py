@@ -141,7 +141,7 @@ class SubscribeView(CreateAPIView, DestroyAPIView):
 
 
 class ShoppingCartRenderView(APIView):
-    renderer_classes = [ShoppingListToPDFRenderer]
+    renderer_classes = [ShoppingListToPDFRenderer, ]
 
     def get(self, request, format=None):
         shopping_cart = (RecipeIngredient.
@@ -153,7 +153,6 @@ class ShoppingCartRenderView(APIView):
                                 'ingredient__measurement_unit').
                          annotate(total=Sum('amount')))
         file_name = f'Shopping_list_{datetime.now().strftime("%d_%m_%Y")}.pdf'
-        response = Response(shopping_cart,
-                            headers={'Content-Disposition':
-                                     f'attachment; filename={file_name}'})
+        response = Response(shopping_cart)
+        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
         return response
