@@ -84,8 +84,9 @@ class RecipeIngredient(models.Model):
                                related_name='ingredients'
                                )
 
-    amount = models.PositiveIntegerField(verbose_name='Ingredient amount',
-                                         default=1)
+    amount = models.FloatField(verbose_name='Ingredient amount',
+                               default=0,
+                               validators=(MinValueValidator(0),))
 
     def __str__(self) -> str:
         return self.ingredient.name
