@@ -5,7 +5,7 @@ on: [push]
 jobs:
 
   copy_data:
-    name: Build
+    name: Copy files into the server
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -16,9 +16,8 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
-        port: 22
-        source: "data/ingredients.csv"
-        target: "test"
+        source: "data"
+        target: "."
 
   tests:
     runs-on: ubuntu-latest
