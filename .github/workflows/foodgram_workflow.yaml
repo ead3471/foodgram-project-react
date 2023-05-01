@@ -78,13 +78,14 @@ jobs:
     needs: build_and_push_to_docker_hub
     if: github.ref == 'refs/heads/master'
     steps:
-      - name: Copy my_file.json to tests subdirectory
-        uses: appleboy/scp-action@v2.1.0
+      - name: Copy  to tests subdirectory
+        uses: appleboy/scp-action@master
         with:
           host: example.com
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
+          port : 22
           source: data/ingredients.csv
           target: /test/ingredients.csv
 
