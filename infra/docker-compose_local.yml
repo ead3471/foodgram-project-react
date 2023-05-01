@@ -38,7 +38,7 @@ services:
     env_file:
       - ./.env
 
-    container_name: postgress
+    container_name: postgres
 
   back:
     build:
