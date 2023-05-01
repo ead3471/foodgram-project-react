@@ -25,14 +25,15 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: copy file via ssh password
+    - working-directory: infra
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
-        source: "infra/docker-compose.yml"
-        target: "./foodgram_setup/docker-compose.yml"
+        source: "docker-compose.yml"
+        target: "./foodgram_setup/"
 
   tests:
     runs-on: ubuntu-latest
