@@ -12,7 +12,7 @@ Users can:
 ## Current location:<br>
 http://158.160.44.52/
 
-APO spec available at http://158.160.44.52/api/docs/
+API spec available at http://158.160.44.52/api/docs/
 
 ## Local project deploy:<br>
  - Install docker on your computer
@@ -72,9 +72,17 @@ ssh <server user>@<server IP>
  mkdir foodgram_setup
  ```
 
- - from another cli copy infra folder to the server 
+ - from another cli copy infra, data and docs folder to the server 
  ```
  scp -r infra/* <server> <user>@<IP>:foodgram_setup
+ ```
+
+  ```
+ scp -r docs/* <server> <user>@<IP>:foodgram_setup
+ ```
+
+  ```
+ scp -r data/* <server> <user>@<IP>:foodgram_setup
  ```
 
  - in the server cli navigate to setup folder
@@ -87,7 +95,7 @@ cd foodgram_setup
 sudo docker-compose up -d --build
  ```
 
- - also you can add load about 2000 ingredients to you db
+ - also you can load about 2000 ingredients to you db
  ```
 sudo docker-compose exec db sh
 ```
@@ -99,7 +107,45 @@ sudo docker-compose exec db sh
 COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADER true, DELIMITER ',', ENCODING 'UTF8');
 ```
 
+
+
+
 - Enjoy!
+
+
+### In addition, the project has a built-in githab action, which, if properly configured, automatically deplyed images to the specified server:
+1. Setup secret keys:
+-  DB_ENGINE
+
+ - DB_HOST
+
+ - DB_NAME
+
+ - DB_PORT
+
+ - DJANGO_SUPERUSER_EMAIL
+
+ - DJANGO_SUPERUSER_PASSWORD
+
+ - DJANGO_SUPERUSER_USERNAME
+
+ - DOCKER_PASSWORD
+
+ - DOCKER_USERNAME
+
+ - HOST - your deploy server address
+
+ - PASSPHRASE - ssh pass for connection to deploy server
+
+ - POSTGRES_PASSWORD
+
+ - POSTGRES_USER
+
+ - SSH_KEY - ssh pass for connection to deploy server
+
+ - USER - your username on deploy server
+
+
 
 
 
