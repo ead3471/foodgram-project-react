@@ -7,6 +7,7 @@ jobs:
   copy_data:
     name: Copy data files into the server
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@master
     - name: copy file via ssh password
@@ -22,6 +23,7 @@ jobs:
   copy_infra:
     name: Copy infra files into the server
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@master
     - name: copy file via ssh password
@@ -37,6 +39,7 @@ jobs:
   copy_docs:
     name: Copy docs files into the server
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@master
     - name: copy file via ssh password

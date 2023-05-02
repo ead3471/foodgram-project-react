@@ -22,21 +22,21 @@ API spec available at http://158.160.44.52/api/docs/
 git clone git@github.com:ead3471/foodgram-project-react.git
 ```
 
- - navigate to the infra folder
+ - Navigate to the infra folder
 ```
 cd foodgram-project-react/infra
 ```
 
- - rename file .env_example to .env and correct values (you can leave everything as it is)
+ - Rename file .env_example to .env and correct values (you can leave everything as it is)
  ```
 mv .env_example .env
 nano .env
 ```
 
- - run docker images
+ - Run docker images
  docker-compose -f docker-compose_local.yml up --build
 
- - you can add load about 2000 ingredients to you db
+ - You can add load about 2000 ingredients to you db
  ```
 docker-compose -f docker-compose_local.yml exec db sh
 ```
@@ -53,12 +53,12 @@ COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADE
 git clone git@github.com:ead3471/foodgram-project-react.git
 ```
 
- - navigate to the infra folder
+ - Navigate to the infra folder
 ```
 cd foodgram-project-react/infra
 ```
 
- - rename file .env_example to .env and correct values (you can leave everything as it is)
+ - Rename file .env_example to .env and correct values (you can leave everything as it is)
 
   - Connect to your server
  ```
@@ -72,7 +72,7 @@ ssh <server user>@<server IP>
  mkdir foodgram_setup
  ```
 
- - from another cli copy infra, data and docs folder to the server 
+ - From another cli copy infra, data and docs folder to the server 
  ```
  scp -r infra/* <server> <user>@<IP>:foodgram_setup
  ```
@@ -85,17 +85,17 @@ ssh <server user>@<server IP>
  scp -r data/* <server> <user>@<IP>:foodgram_setup
  ```
 
- - in the server cli navigate to setup folder
+ - In the server cli navigate to setup folder
   ```
 cd foodgram_setup
  ```
 
- - run docker-compose
+ - Run docker-compose
 ```
 sudo docker-compose up -d --build
  ```
 
- - also you can load about 2000 ingredients to you db
+ - Also you can load about 2000 ingredients to you db
  ```
 sudo docker-compose exec db sh
 ```
@@ -113,7 +113,7 @@ COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADE
 - Enjoy!
 
 
-### In addition, the project has a built-in githab action, which, if properly configured, automatically deplyed images to the specified server:
+### In addition, the project has a built-in githab action, which, if properly configured, automatically deploys images to the specified server on push actions:
 1. Setup secret keys:
 -  DB_ENGINE
 
