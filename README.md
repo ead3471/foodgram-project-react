@@ -14,6 +14,9 @@ http://158.160.44.52/
 
 API spec available at http://158.160.44.52/api/docs/
 
+Superuser login: root@root.com
+Superuser pass: 1
+
 ## Local project deploy:<br>
  - Install docker on your computer
 
