@@ -34,7 +34,22 @@ nano .env
 ```
 
  - Run docker images
+ ```
  docker-compose -f docker-compose_local.yml up --build
+ ```
+
+ - Make migrations
+```
+docker-compose -f docker-compose_local.yml exec db sh
+cd app
+python manage.py migrate
+```
+
+
+ - Create superuser
+```
+python manage.py createsuperuser
+```
 
  - You can add load about 2000 ingredients to you db
  ```
@@ -94,6 +109,16 @@ cd foodgram_setup
 ```
 sudo docker-compose up -d --build
  ```
+ - Make migrations
+```
+docker-compose exec back sh
+cd app
+python manage.py migrate
+```
+ - Create superuser
+```
+python manage.py createsuperuser
+```
 
  - Also you can load about 2000 ingredients to you db
  ```
