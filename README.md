@@ -1,4 +1,4 @@
-# Foodgram Rpoect
+# Foodgram Rpoject
 [![Foodgram workflow](https://github.com/ead3471/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)](https://github.com/ead3471/foodgram-project-react/actions/workflows/foodgram_workflow.yaml)
 ## This is a Foodgram project -a special service for cooking enthusiasts.<br>
 Users can:
