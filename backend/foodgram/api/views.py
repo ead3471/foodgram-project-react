@@ -54,7 +54,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.prefetch_related(
+        'author', 'ingredients__ingredient').all()
     serializer_class = GetRecipeSerializer
     pagination_class = PageLimitedPaginator
     permission_classes = (IsAuthoOrReadOnly,)
@@ -115,7 +116,7 @@ class SubscriptionsView(ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+        return Subscribe.objects.prefetch_related('subscribe').filter(user=self.request.user)
 
     def get_serializer_context(self):
         return {"request": self.request}

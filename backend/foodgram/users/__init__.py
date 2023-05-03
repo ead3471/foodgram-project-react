@@ -1,0 +1,4 @@
+
+class Setup:
+    EMAIL_MAX_LENGTH = 254
+    USERNAME_MAX_LENGTH = 150
