@@ -118,6 +118,8 @@ jobs:
           script: |
             cd foodgram_setup/infra
             sudo docker-compose stop
+            sudo docker-compose rm -f back
+            sudo docker-compose pull
             rm .env
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
