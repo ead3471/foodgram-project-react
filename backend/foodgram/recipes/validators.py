@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 @deconstructible
-class MinValueValidator(BaseValidator):
+class BorderedMinValueValidator(BaseValidator):
     def __init__(self, limit_value: Number, is_included=True) -> None:
         if is_included:
             message = _(

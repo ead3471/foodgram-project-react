@@ -7,7 +7,7 @@ from django.db.models import (CASCADE, CharField, DateTimeField, FloatField,
 
 from recipes import Setup
 
-from .validators import MinValueValidator
+from .validators import BorderedMinValueValidator
 
 User = get_user_model()
 
@@ -96,7 +96,7 @@ class RecipeIngredient(Model):
     amount = FloatField(verbose_name='Ingredient amount',
                         default=1,
                         validators=(
-                            MinValueValidator(
+                            BorderedMinValueValidator(
                                 limit_value=Setup.INGREDIENT_AMOUNT_MIN_VALUE,
                                 is_included=False),
                         ))
