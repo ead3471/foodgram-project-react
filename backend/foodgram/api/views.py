@@ -8,10 +8,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DefaultUserViewSet
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 
 from api.serializers import (CreateRecipeSerializer, FavoritesSerializer,
                              GetRecipeSerializer, IngredientSerializer,
@@ -23,8 +24,9 @@ from users.models import Subscribe
 
 from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
-from .permissions import IsAuthoOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 from .renders import ShoppingListToPDFRenderer
+from rest_framework.renderers import JSONRenderer
 
 User = get_user_model()
 
@@ -32,6 +34,7 @@ User = get_user_model()
 class UserViewSet(DefaultUserViewSet):
 
     pagination_class = PageLimitedPaginator
+    http_method_names = ['get', 'post']
 
     @action(["get", ],
             detail=False,
@@ -44,6 +47,8 @@ class UserViewSet(DefaultUserViewSet):
 class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', ]
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -51,6 +56,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', ]
 
 
 class RecipeViewSet(ModelViewSet):
@@ -58,7 +65,7 @@ class RecipeViewSet(ModelViewSet):
         'author', 'ingredients__ingredient').all()
     serializer_class = GetRecipeSerializer
     pagination_class = PageLimitedPaginator
-    permission_classes = (IsAuthoOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly, )
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -95,6 +102,8 @@ class ShoppingCartView(CreateAPIView, DestroyAPIView):
     serializer_class = ShoppingCartSerializer
     permission_classes = (IsAuthenticated,)
 
+    http_method_names = ('POST', 'DELETE')
+
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
         favorite_record = get_object_or_404(
@@ -128,6 +137,8 @@ class SubscribeView(CreateAPIView, DestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = SubscribeSerializer
 
+    http_method_names = ['post']
+
     def get_object(self):
         subscribe_id = self.kwargs.get('user_id')
         return get_object_or_404(Subscribe,
@@ -144,7 +155,10 @@ class SubscribeView(CreateAPIView, DestroyAPIView):
 
 
 class ShoppingCartRenderView(APIView):
-    renderer_classes = [ShoppingListToPDFRenderer, ]
+    renderer_classes = (ShoppingListToPDFRenderer,)
+    permission_classes = [IsAuthenticated, ]
+
+    # http_method_names = ['GET']
 
     def get(self, request, format=None):
         shopping_cart = (RecipeIngredient.

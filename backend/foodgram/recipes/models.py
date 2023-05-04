@@ -9,6 +9,7 @@ from recipes import Setup
 
 from .validators import BorderedMinValueValidator
 
+
 User = get_user_model()
 
 
