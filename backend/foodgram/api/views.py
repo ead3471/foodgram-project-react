@@ -11,8 +11,7 @@ from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.serializers import (CreateRecipeSerializer, FavoritesSerializer,
                              GetRecipeSerializer, IngredientSerializer,
@@ -26,7 +25,6 @@ from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthorOrReadOnly
 from .renders import ShoppingListToPDFRenderer
-from rest_framework.renderers import JSONRenderer
 
 User = get_user_model()
 
@@ -34,7 +32,7 @@ User = get_user_model()
 class UserViewSet(DefaultUserViewSet):
 
     pagination_class = PageLimitedPaginator
-    http_method_names = ['get', 'post']
+    http_method_names = ['get', 'post', ]
 
     @action(["get", ],
             detail=False,

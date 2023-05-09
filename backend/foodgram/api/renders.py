@@ -19,7 +19,9 @@ class ShoppingListToPDFRenderer(BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):\
 
         if renderer_context['response'].status_code != status.HTTP_200_OK:
-            return JSONRenderer().render(data, accepted_media_type, renderer_context)
+            return JSONRenderer().render(data,
+                                         accepted_media_type,
+                                         renderer_context)
 
         buffer = io.BytesIO()
 
