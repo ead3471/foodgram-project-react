@@ -100,7 +100,7 @@ class ShoppingCartView(CreateAPIView, DestroyAPIView):
     serializer_class = ShoppingCartSerializer
     permission_classes = (IsAuthenticated,)
 
-    http_method_names = ('POST', 'DELETE')
+    http_method_names = ('post', 'delete')
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')

@@ -2,41 +2,43 @@
 [![Foodgram workflow](https://github.com/ead3471/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)](https://github.com/ead3471/foodgram-project-react/actions/workflows/foodgram_workflow.yaml)
 ## This is a Foodgram project -a special service for cooking enthusiasts.<br>
 Users can:
- - register
- - publish their own recipes
- - subscribe to favorite authors
- - add recipes to favorites
- - add recipes to shopping cart
- - download shopping cart in PDF format with calculated total ingredients
+- Register
+- Publish their own recipes
+- Subscribe to favorite authors
+- Add recipes to favorites
+- Add recipes to the shopping cart
+- Download the shopping cart in PDF format with calculated total ingredients
 
 ## Current location:<br>
 http://158.160.44.52/
 
 API spec available at http://158.160.44.52/api/docs/
 
-Superuser login: root@root.com
-Superuser pass: 1
+### Superuser Login
+
+- Email: root@root.com
+- Password: 1
 
 ## Local project deploy:<br>
- - Install docker on your computer
+1. Install Docker on your computer
 
- - Clone project from github
+2. Clone project from Github
 ```
 git clone git@github.com:ead3471/foodgram-project-react.git
 ```
 
- - Navigate to the infra folder
+2. Navigate to the infra folder
 ```
 cd foodgram-project-react/infra
 ```
 
- - Rename file .env_example to .env and correct values (you can leave everything as it is)
+4. Rename file '.env_example' to '.env' and correct values (you can leave everything as it is)
  ```
 mv .env_example .env
 nano .env
 ```
 
- - Run docker images
+5. Run Docker images
  ```
  docker-compose -f docker-compose_local.yml up --build
  ```
@@ -49,12 +51,12 @@ python manage.py migrate
 ```
 
 
- - Create superuser
+6. Create superuser
 ```
 python manage.py createsuperuser
 ```
 
- - You can add load about 2000 ingredients to you db
+7. (Optional) Load about 2000 ingredients into your database:
  ```
 docker-compose -f docker-compose_local.yml exec db sh
 ```
@@ -66,31 +68,31 @@ COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADE
 ```
 
 ## Remote project deploy:<br>
- - Clone project from github to your computer
+1. Clone project from github to your computer
 ```
 git clone git@github.com:ead3471/foodgram-project-react.git
 ```
 
- - Navigate to the infra folder
+2. Navigate to the infra folder
 ```
 cd foodgram-project-react/infra
 ```
 
- - Rename file .env_example to .env and correct values (you can leave everything as it is)
+3. Rename file .env_example to .env and correct values (you can leave everything as it is)
 
-  - Connect to your server
+4. Connect to your server
  ```
 ssh <server user>@<server IP>
 ```
 
- - Install docker on your server(depends on exact server os)
+5. Install docker on your server(depends on exact server os)
 
- - Create folder foodgram_setup on server
+6. Create folder foodgram_setup on server
  ```
  mkdir foodgram_setup
  ```
 
- - From another cli copy infra, data and docs folder to the server 
+7. From another cli copy infra, data and docs folder to the server 
  ```
  scp -r infra/* <server> <user>@<IP>:foodgram_setup
  ```
@@ -103,27 +105,27 @@ ssh <server user>@<server IP>
  scp -r data/* <server> <user>@<IP>:foodgram_setup
  ```
 
- - In the server cli navigate to setup folder
+8. In the server cli navigate to setup folder
   ```
 cd foodgram_setup
  ```
 
- - Run docker-compose
+9. Run docker-compose
 ```
 sudo docker-compose up -d --build
  ```
- - Make migrations
+10. Make migrations
 ```
 docker-compose exec back sh
 cd app
 python manage.py migrate
 ```
- - Create superuser
+11. Create superuser
 ```
 python manage.py createsuperuser
 ```
 
- - Also you can load about 2000 ingredients to you db
+12. (Optional) Load about 2000 ingredients into your database:
  ```
 sudo docker-compose exec db sh
 ```
@@ -136,13 +138,8 @@ COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADE
 ```
 
 
-
-
-- Enjoy!
-
-
-### In addition, the project has a built-in githab action, which, if properly configured, automatically deploys images to the specified server on push actions:
-1. Setup secret keys:
+### The project includes a built-in GitHub Action that can automatically deploy images to the specified server on push actions. Follow the steps below to set it up:
+1. Setup secret keys in your GitHub repository's settings:
 -  DB_ENGINE
 
  - DB_HOST
@@ -161,23 +158,14 @@ COPY recipes_ingredient FROM '/tmp/data/ingredients.csv' WITH (FORMAT CSV, HEADE
 
  - DOCKER_USERNAME
 
- - HOST - your deploy server address
-
- - PASSPHRASE - ssh pass for connection to deploy server
-
+ - HOST (your deploy server address)
+ - PASSPHRASE (SSH passphrase for connection to the deploy server)
  - POSTGRES_PASSWORD
-
  - POSTGRES_USER
+ - SSH_KEY (SSH passphrase for connection to the deploy server)
+ - USER (your username on the deploy server)
 
- - SSH_KEY - ssh pass for connection to deploy server
-
- - USER - your username on deploy server
-
-
-
-
-
-
+2. Commit and push the changes to your GitHub repository. The GitHub Action will automatically deploy the images to the specified server on every push action.
 
 
 ### Backend Author:
