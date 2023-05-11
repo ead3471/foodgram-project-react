@@ -28,10 +28,12 @@ class UserSerializer(ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def get_is_subscribed(self, user_obj):
-        current_user = self.context['request'].user
-        if current_user.is_authenticated:
+
+        context = self.context.get('request')
+        if context and context.user.is_authenticated:
             return Subscribe.objects.filter(
-                user=current_user, subscribe=user_obj
+                user=context.user,
+                subscribe=user_obj
             ).exists()
         return False
 

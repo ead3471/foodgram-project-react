@@ -75,13 +75,16 @@ class URLsTests(TestCase):
         patch = client.patch
         put = client.put
 
-        all_check_methods = [client.get,
-                             client.put,
-                             client.post,
-                             client.delete,
-                             client.patch]
+        all_check_methods = [
+            client.get,
+            client.put,
+            client.post,
+            client.delete,
+            client.patch]
 
         urls: dict[str, dict[Callable, int]] = {
+            "/api/users/me/": {
+                post: status.HTTP_405_METHOD_NOT_ALLOWED, },
 
             "/api/users/": {
                 get: status.HTTP_200_OK,
@@ -110,11 +113,13 @@ class URLsTests(TestCase):
                 put: status.HTTP_405_METHOD_NOT_ALLOWED,
                 delete: status.HTTP_405_METHOD_NOT_ALLOWED, },
 
+
+
             f"/api/auth/token/logout/": {},
 
             f"/api/users/{URLsTests.author_1.pk}/subscribe/": {},
 
-            "/api/users/me/": {},
+
 
             "/api/tags/": {
                 get: status.HTTP_200_OK,

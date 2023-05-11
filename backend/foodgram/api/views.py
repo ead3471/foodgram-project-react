@@ -5,41 +5,40 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as DefaultUserViewSet
+from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.serializers import (CreateRecipeSerializer, FavoritesSerializer,
                              GetRecipeSerializer, IngredientSerializer,
                              ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer)
+                             TagSerializer, UserSerializer)
 from recipes.models import (Favorites, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import Subscribe
-
+from djoser.conf import settings as djoser_settings
 from .filters import IngredientFilter, RecipeFilter
 from .paginators import PageLimitedPaginator
 from .permissions import IsAuthorOrReadOnly
 from .renders import ShoppingListToPDFRenderer
 
+
 User = get_user_model()
 
 
-class UserViewSet(DefaultUserViewSet):
-
+class FoodgramUserViewSet(UserViewSet):
     pagination_class = PageLimitedPaginator
     http_method_names = ['get', 'post', ]
 
-    @action(["get", ],
-            detail=False,
-            permission_classes=(IsAuthenticated,))
-    def me(self, request, *args, **kwargs):
-        self.get_object = self.get_instance
-        return self.retrieve(request, *args, **kwargs)
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = djoser_settings.PERMISSIONS.current_user
+        return super().get_permissions()
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -135,7 +134,7 @@ class SubscribeView(CreateAPIView, DestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = SubscribeSerializer
 
-    http_method_names = ['post']
+    http_method_names = ['post', 'delete']
 
     def get_object(self):
         subscribe_id = self.kwargs.get('user_id')
