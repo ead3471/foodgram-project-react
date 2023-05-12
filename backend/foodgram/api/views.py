@@ -14,12 +14,20 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from api.serializers import (CreateRecipeSerializer, FavoritesSerializer,
-                             GetRecipeSerializer, IngredientSerializer,
-                             ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer, UserSerializer)
-from recipes.models import (Favorites, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
+from api.serializers import (CreateRecipeSerializer,
+                             FavoritesSerializer,
+                             GetRecipeSerializer,
+                             IngredientSerializer,
+                             ShoppingCartSerializer,
+                             SubscribeSerializer,
+                             TagSerializer,
+                             UserSerializer)
+from recipes.models import (Favorites,
+                            Ingredient,
+                            Recipe,
+                            RecipeIngredient,
+                            ShoppingCart,
+                            Tag)
 from users.models import Subscribe
 from djoser.conf import settings as djoser_settings
 from .filters import IngredientFilter, RecipeFilter
