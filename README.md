@@ -8,14 +8,14 @@ Users can:
  - add recipes to favorites
  - add recipes to shopping cart
  - download shopping cart in PDF format with calculated total ingredients
-
+<!-- 
 ## Current location:<br>
 http://158.160.44.52/
 
 API spec available at http://158.160.44.52/api/docs/
 
 Superuser login: root@root.com
-Superuser pass: 1
+Superuser pass: 1 -->
 
 ## Local project deploy:<br>
  - Install docker on your computer
