@@ -5,12 +5,14 @@ from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from users.models import Subscribe
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from django.conf import settings
+from .json_api_schemas import RECIPE_RESPONSE_JSON_SCHEMA
 from .utils import (
     create_image,
     authorize_client_by_user,
     get_byte_64_image,
     test_response_content,
+    test_recipe_content,
+    test_json_schema,
 )
 from django.urls import reverse
 from api.serializers import (
@@ -20,8 +22,8 @@ from api.serializers import (
     SubscribeSerializer,
 )
 import json
-import os
-import base64
+import jsonschema
+
 
 User = get_user_model()
 
@@ -34,14 +36,14 @@ class TestIngredientsView(TestCase):
         )
 
     def test_list(self):
-        responce_data = self.client.get(reverse("ingredients-list")).data
+        response_data = self.client.get(reverse("ingredients-list")).data
         expected_data = IngredientSerializer(
             Ingredient.objects.all(), many=True
         ).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
     def test_retrive(self):
-        responce_data = self.client.get(
+        response_data = self.client.get(
             reverse(
                 "ingredients-detail",
                 kwargs={"pk": TestIngredientsView.ingredient.pk},
@@ -51,7 +53,7 @@ class TestIngredientsView(TestCase):
         expected_data = IngredientSerializer(
             instance=TestIngredientsView.ingredient
         ).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
 
 class TestTagsView(TestCase):
@@ -60,17 +62,17 @@ class TestTagsView(TestCase):
         cls.tag = Tag.objects.create(name="name", slug="slug", color="#FFFFFF")
 
     def test_list(self):
-        responce_data = self.client.get(reverse("tags-list")).data
+        response_data = self.client.get(reverse("tags-list")).data
         expected_data = TagSerializer(Tag.objects.all(), many=True).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
     def test_retrive(self):
-        responce_data = self.client.get(
+        response_data = self.client.get(
             reverse("tags-detail", kwargs={"pk": TestTagsView.tag.pk})
         ).data
 
         expected_data = TagSerializer(instance=TestTagsView.tag).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
 
 class TestUsersView(TestCase):
@@ -93,24 +95,24 @@ class TestUsersView(TestCase):
 
     def test_list(self):
         client = Client()
-        responce_data = client.get(reverse("user-list")).data
+        response_data = client.get(reverse("user-list")).data
         expected_data = UserSerializer(User.objects.all(), many=True).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
     def test_retrive(self):
-        responce_data = self.client.get(
+        response_data = self.client.get(
             reverse("user-detail", kwargs={"id": TestUsersView.user_1.id})
         ).data
 
         expected_data = UserSerializer(instance=TestUsersView.user_1).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
     def test_me(self):
-        responce_data = TestUsersView.user_1_client.get(
+        response_data = TestUsersView.user_1_client.get(
             reverse("user-me")
         ).data
         expected_data = UserSerializer(instance=TestUsersView.user_1).data
-        self.assertEqual(responce_data, expected_data)
+        self.assertEqual(response_data, expected_data)
 
     def test_register_new_user(self):
         client = Client()
@@ -180,28 +182,6 @@ class TestSubscribeView(TestCase):
 
 
 class TestRecipeView(TestCase):
-    RECIPE_REQUIRED_FIELDS = [
-        "id",
-        "author",
-        {"tags": ["id", "name", "color", "slug"]},
-        {"ingredients": ["id", "name", "measurement_unit", "amount"]},
-        "is_favorited",
-        "is_in_shopping_cart",
-        "name",
-        "image",
-        "text",
-        "cooking_time",
-    ]
-
-    AUTHOR_REQUIRED_FIELDS = {
-        "email",
-        "id",
-        "username",
-        "first_name",
-        "last_name",
-        "is_subscribed",
-    }
-
     @classmethod
     def setUpTestData(cls) -> None:
         cls.author_user = User.objects.create(
@@ -277,13 +257,13 @@ class TestRecipeView(TestCase):
             ).exists()
         )
 
-        responce = self.author_client.post(
+        response = self.author_client.post(
             reverse("recipe-list"),
             data=json.dumps(recipe_data),
             content_type="application/json",
         )
 
-        self.assertEqual(responce.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # check given recipe is exists after post request
         self.assertTrue(
@@ -294,34 +274,27 @@ class TestRecipeView(TestCase):
             ).exists()
         )
 
-        author_data = responce.data["author"]
-        test_response_content(
-            self, author_data, TestRecipeView.AUTHOR_REQUIRED_FIELDS
-        )
-
-        test_response_content(
-            self, responce.data, TestRecipeView.RECIPE_REQUIRED_FIELDS
-        )
+        test_json_schema(self, RECIPE_RESPONSE_JSON_SCHEMA, response.data)
 
     def test_recipe_delete_by_author(self):
-        responce = self.author_client.delete(
+        response = self.author_client.delete(
             reverse(
                 "recipe-detail", kwargs={"pk": TestRecipeView.test_recipe.pk}
             )
         )
-        self.assertEqual(status.HTTP_204_NO_CONTENT, responce.status_code)
+        self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
         self.assertFalse(
             Recipe.objects.filter(pk=TestRecipeView.test_recipe.pk).exists(),
             "The recipe is not removed",
         )
 
     def test_recipe_delete_by_not_author(self):
-        responce = self.usual_client.delete(
+        response = self.usual_client.delete(
             reverse(
                 "recipe-detail", kwargs={"pk": TestRecipeView.test_recipe.pk}
             )
         )
-        self.assertEqual(status.HTTP_403_FORBIDDEN, responce.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         self.assertTrue(
             Recipe.objects.filter(pk=TestRecipeView.test_recipe.pk).exists(),
             "The recipe is removed by not author",
@@ -329,13 +302,13 @@ class TestRecipeView(TestCase):
 
     def test_non_existent_recipe_delete(self):
         recipes_count_before_delete = Recipe.objects.count()
-        responce = self.usual_client.delete(
+        response = self.usual_client.delete(
             reverse(
                 "recipe-detail",
                 kwargs={"pk": TestRecipeView.test_recipe.pk + 10000},
             )
         )
-        self.assertEqual(status.HTTP_404_NOT_FOUND, responce.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         recipes_count_after_delete = Recipe.objects.count()
         self.assertEqual(
             recipes_count_before_delete, recipes_count_after_delete
@@ -352,13 +325,7 @@ class TestRecipeView(TestCase):
         test_response_content(self, response.data, main_required_fields)
 
         for recipe in response.data["results"]:
-            author_data = recipe["author"]
-            test_response_content(
-                self, author_data, TestRecipeView.AUTHOR_REQUIRED_FIELDS
-            )
-            test_response_content(
-                self, recipe, TestRecipeView.RECIPE_REQUIRED_FIELDS
-            )
+            test_json_schema(self, RECIPE_RESPONSE_JSON_SCHEMA, recipe)
 
     def test_recipe_detail(self):
         response = self.usual_client.get(
@@ -369,21 +336,121 @@ class TestRecipeView(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        test_response_content(
-            self,
-            response.data["author"],
-            TestRecipeView.AUTHOR_REQUIRED_FIELDS,
-        )
-
-        test_response_content(
-            self, response.data, TestRecipeView.RECIPE_REQUIRED_FIELDS
-        )
+        test_json_schema(self, RECIPE_RESPONSE_JSON_SCHEMA, response.data)
 
     def test_non_existent_recipe_detail(self):
-        responce = self.usual_client.get(
+        response = self.usual_client.get(
             reverse(
                 "recipe-detail",
                 kwargs={"pk": TestRecipeView.test_recipe.pk + 10000},
             )
         )
-        self.assertEqual(status.HTTP_404_NOT_FOUND, responce.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_recipe_update(self):
+        new_recipe_data = {
+            "name": "new_recipe_name",
+            "text": "new_some_text",
+            "cooking_time": 4,
+            "tags": [
+                TestRecipeView.tags[0].pk,
+            ],
+            "ingredients": [
+                {"id": TestRecipeView.ingredients[0].pk, "amount": 1000.0}
+            ],
+            "image": get_byte_64_image(),
+        }
+
+        response = self.author_client.patch(
+            reverse(
+                "recipe-detail", kwargs={"pk": TestRecipeView.test_recipe.pk}
+            ),
+            data=json.dumps(new_recipe_data),
+            content_type="application/json",
+        )
+        test_json_schema(self, RECIPE_RESPONSE_JSON_SCHEMA, response.data)
+
+        changed_recipe = Recipe.objects.get(pk=TestRecipeView.test_recipe.pk)
+        test_recipe_content(self, new_recipe_data, changed_recipe)
+
+    def test_json_schema(self):
+        RECIPE_JSON_SCHEMA = {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "author": {
+                    "type": "object",
+                    "properties": {
+                        "email": {"type": "string"},
+                        "id": {"type": "integer"},
+                        "username": {"type": "string"},
+                        "first_name": {"type": "string"},
+                        "last_name": {"type": "string"},
+                        "is_subscribed": {"type": "boolean"},
+                    },
+                    "required": [],
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "name": {"type": "string"},
+                            "color": {"type": "string"},
+                            "slug": {"type": "string"},
+                        },
+                        "required": [],
+                    },
+                },
+                "is_favorited": {"type": "boolean"},
+                "is_in_shopping_cart": {"type": "boolean"},
+                "name": {"type": "string"},
+                "image": {"type": "string"},
+                "text": {"type": "string"},
+                "cooking_time": {"type": "integer"},
+            },
+            "required": [],
+        }
+
+        data = {
+            "id": 8,
+            "author": {
+                "username": "test",
+                "email": "test@test.com",
+                "first_name": "dsds",
+                "last_name": "sdsds",
+                "id": 2,
+                "is_subscribed": False,
+            },
+            "name": "55",
+            "tags": [
+                {
+                    "id": 1,
+                    "name": "breakfast",
+                    "color": "#FFA500",
+                    "slug": "slug",
+                }
+            ],
+            "ingredients": [
+                {
+                    "id": 8,
+                    "name": "авокадо",
+                    "measurement_unit": "по вкусу",
+                    "amount": 8.0,
+                }
+            ],
+            "image": "http://127.0.0.1:8000/media/recipes/b9ddfae4-0435-4b71-a93b-6ba827c3ec6a.png",
+            "text": "44",
+            "cooking_time": 3,
+            "is_favorited": False,
+            "is_in_shopping_cart": False,
+        }
+
+        try:
+            jsonschema.validate(
+                data,
+                RECIPE_RESPONSE_JSON_SCHEMA,
+            )
+        except jsonschema.exceptions.ValidationError as e:
+            self.fail(f"Response data validation failed. Error details:{e}")
