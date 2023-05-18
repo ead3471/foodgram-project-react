@@ -2,7 +2,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from django.apps import apps
 import base64
 from django.test import TestCase
 from recipes.models import Recipe
@@ -26,19 +25,23 @@ def get_byte_64_image() -> str:
 
 
 def authorize_client_by_user(client: APIClient, user: User) -> Token:
+    """Creates Token for given client and set this token as the
+    credentials of given APIClient
+
+    Parameters
+    ----------
+    client : APIClient
+        APIClient instance
+    user : User
+        user instance
+
+    Returns
+    -------
+    Token
+        new token for the given user instance
+    """
     token = Token.objects.create(user=user)
     client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
-
-
-def auto_tear_down(cls):
-    def dell_method(*args, **kwargs):
-        print(f"in tear down for {cls}")
-        all_models = apps.get_models()
-        for model in all_models:
-            model.objects.all().delete()
-
-    cls.tearDown = dell_method
-    return cls
 
 
 def test_json_schema(test: TestCase, schema, tested_json):
@@ -60,27 +63,6 @@ def test_json_schema(test: TestCase, schema, tested_json):
         )
     except jsonschema.exceptions.ValidationError as e:
         test.fail(f"Response data validation failed. Error details:{e}")
-
-
-def test_response_content(test: TestCase, response_data, required_fields):
-    for field in required_fields:
-        if isinstance(field, dict):
-            main_field_name = list(field.keys())[0]
-            with test.subTest(field=main_field_name):
-                test.assertIn(
-                    main_field_name,
-                    response_data,
-                )
-            for sub_field in field[main_field_name]:
-                with test.subTest(sub_field=sub_field):
-                    for responce_element in response_data[main_field_name]:
-                        test.assertIn(sub_field, responce_element)
-        else:
-            with test.subTest(field=field):
-                test.assertIn(
-                    field,
-                    response_data,
-                )
 
 
 def test_recipe_content(

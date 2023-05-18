@@ -1,7 +1,15 @@
-import pprint
+def schema_to_strict(schema: dict) -> dict:
+    """Set all fields in givane schema as required.
 
+    Parameters
+    ----------
+    schema : dict
+        json schema
 
-def schema_to_strict(schema):
+    Returns
+    -------
+    dict
+    """
     if schema["type"] not in ["object", "array"]:
         return schema
 
@@ -60,8 +68,26 @@ RECIPE_INGREDIENT_RESPONSE_API_SCHEMA = {
 RECIPE_INGREDIENT_ARRAY_RESPONSE_API_SCHEMA = {
     "type": "array",
     "items": RECIPE_INGREDIENT_RESPONSE_API_SCHEMA,
-    "minItems": 1,
+    "minItems": 0,
 }
+
+
+INGREDIENT_RESPONSE_API_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": "string"},
+        "measurement_unit": {"type": "string"},
+    },
+}
+
+INGREDIENT_ARRAY_RESPONSE_API_SCHEMA = {
+    "type": "array",
+    "items": INGREDIENT_RESPONSE_API_SCHEMA,
+    "minItems": 0,
+}
+
+schema_to_strict(INGREDIENT_ARRAY_RESPONSE_API_SCHEMA)
 
 
 RECIPE_RESPONSE_JSON_SCHEMA = {

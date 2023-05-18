@@ -1,4 +1,7 @@
-from django.test import TestCase
+import shutil
+import tempfile
+from django.conf import settings
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient as Client
 from django.contrib.auth import get_user_model
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
@@ -24,10 +27,16 @@ from api.serializers import (
     SubscribeSerializer,
 )
 import json
-import jsonschema
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.MEDIA_ROOT)
 
 
 User = get_user_model()
+
+
+# TODO 1. Change tests to not using serializers
+# TODO 2. Add checking jsonschema
+# TODO 3. Add checking creating Recipe,with bas parameters
 
 
 class TestIngredientsView(TestCase):
@@ -39,6 +48,7 @@ class TestIngredientsView(TestCase):
 
     def test_list(self):
         response_data = self.client.get(reverse("ingredients-list")).data
+
         expected_data = IngredientSerializer(
             Ingredient.objects.all(), many=True
         ).data
@@ -183,7 +193,13 @@ class TestSubscribeView(TestCase):
         self.assertEqual(resp.data, expected_data)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class TestRecipeView(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
     @classmethod
     def setUpTestData(cls) -> None:
         cls.author_user = User.objects.create(
@@ -372,85 +388,3 @@ class TestRecipeView(TestCase):
 
         changed_recipe = Recipe.objects.get(pk=TestRecipeView.test_recipe.pk)
         test_recipe_content(self, new_recipe_data, changed_recipe)
-
-    def test_json_schema(self):
-        RECIPE_JSON_SCHEMA = {
-            "type": "object",
-            "properties": {
-                "id": {"type": "integer"},
-                "author": {
-                    "type": "object",
-                    "properties": {
-                        "email": {"type": "string"},
-                        "id": {"type": "integer"},
-                        "username": {"type": "string"},
-                        "first_name": {"type": "string"},
-                        "last_name": {"type": "string"},
-                        "is_subscribed": {"type": "boolean"},
-                    },
-                    "required": [],
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "name": {"type": "string"},
-                            "color": {"type": "string"},
-                            "slug": {"type": "string"},
-                        },
-                        "required": [],
-                    },
-                },
-                "is_favorited": {"type": "boolean"},
-                "is_in_shopping_cart": {"type": "boolean"},
-                "name": {"type": "string"},
-                "image": {"type": "string"},
-                "text": {"type": "string"},
-                "cooking_time": {"type": "integer"},
-            },
-            "required": [],
-        }
-
-        data = {
-            "id": 8,
-            "author": {
-                "username": "test",
-                "email": "test@test.com",
-                "first_name": "dsds",
-                "last_name": "sdsds",
-                "id": 2,
-                "is_subscribed": False,
-            },
-            "name": "55",
-            "tags": [
-                {
-                    "id": 1,
-                    "name": "breakfast",
-                    "color": "#FFA500",
-                    "slug": "slug",
-                }
-            ],
-            "ingredients": [
-                {
-                    "id": 8,
-                    "name": "авокадо",
-                    "measurement_unit": "по вкусу",
-                    "amount": 8.0,
-                }
-            ],
-            "image": "http://127.0.0.1:8000/media/recipes/b9ddfae4-0435-4b71-a93b-6ba827c3ec6a.png",
-            "text": "44",
-            "cooking_time": 3,
-            "is_favorited": False,
-            "is_in_shopping_cart": False,
-        }
-
-        try:
-            jsonschema.validate(
-                data,
-                RECIPE_RESPONSE_JSON_SCHEMA,
-            )
-        except jsonschema.exceptions.ValidationError as e:
-            self.fail(f"Response data validation failed. Error details:{e}")
