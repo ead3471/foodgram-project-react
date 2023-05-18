@@ -80,4 +80,19 @@ RECIPE_RESPONSE_JSON_SCHEMA = {
     },
 }
 
+RECIPES_PAGINATED_RESPONCE_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "count": {"type": "integer"},
+        "next": {"type": ["string", "null"]},
+        "previous": {"type": ["string", "null"]},
+        "results": {
+            "type": "array",
+            "items": RECIPE_RESPONSE_JSON_SCHEMA,
+            "minItems": 1,
+        },
+    },
+    "required": ["count", "results"],
+}
+
 schema_to_strict(RECIPE_RESPONSE_JSON_SCHEMA)

@@ -1,16 +1,18 @@
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from rest_framework.test import APIClient as Client
 from django.contrib.auth import get_user_model
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 from users.models import Subscribe
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .json_api_schemas import RECIPE_RESPONSE_JSON_SCHEMA
+from .json_api_schemas import (
+    RECIPE_RESPONSE_JSON_SCHEMA,
+    RECIPES_PAGINATED_RESPONCE_JSON_SCHEMA,
+)
 from .utils import (
     create_image,
     authorize_client_by_user,
     get_byte_64_image,
-    test_response_content,
     test_recipe_content,
     test_json_schema,
 )
@@ -321,11 +323,9 @@ class TestRecipeView(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        main_required_fields = ["count", "next", "previous", "results"]
-        test_response_content(self, response.data, main_required_fields)
-
-        for recipe in response.data["results"]:
-            test_json_schema(self, RECIPE_RESPONSE_JSON_SCHEMA, recipe)
+        test_json_schema(
+            self, RECIPES_PAGINATED_RESPONCE_JSON_SCHEMA, response.data
+        )
 
     def test_recipe_detail(self):
         response = self.usual_client.get(
