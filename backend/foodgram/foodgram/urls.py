@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from django.contrib import admin
-from api.views import (UserViewSet,
+from api.views import (FoodgramUserViewSet,
                        TagViewSet,
                        IngredientViewSet,
                        RecipeViewSet,
@@ -12,9 +12,9 @@ from api.views import (UserViewSet,
                        ShoppingCartRenderView)
 
 router_api = DefaultRouter()
-router_api.register(r'users', UserViewSet)
-router_api.register(r'tags', TagViewSet)
-router_api.register(r'ingredients', IngredientViewSet)
+router_api.register(r'users', FoodgramUserViewSet, basename='user')
+router_api.register(r'tags', TagViewSet, basename='tags')
+router_api.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router_api.register(r'recipes', RecipeViewSet)
 
 urlpatterns = [

@@ -8,14 +8,21 @@ from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics, ttfonts
 from reportlab.platypus import (BaseDocTemplate, Frame, KeepTogether,
                                 PageTemplate, Paragraph)
-from rest_framework.renderers import BaseRenderer
+from rest_framework.renderers import BaseRenderer, JSONRenderer
+from rest_framework import status
 
 
 class ShoppingListToPDFRenderer(BaseRenderer):
     media_type = 'application/pdf'
     format = '.pdf'
 
-    def render(self, data, accepted_media_type=None, renderer_context=None):
+    def render(self, data, accepted_media_type=None, renderer_context=None):\
+
+        if renderer_context['response'].status_code != status.HTTP_200_OK:
+            return JSONRenderer().render(data,
+                                         accepted_media_type,
+                                         renderer_context)
+
         buffer = io.BytesIO()
 
         font = ttfonts.TTFont('Arial', os.path.join(

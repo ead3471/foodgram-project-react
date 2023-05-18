@@ -141,6 +141,7 @@ backend/foodgram/static/admin/
 backend/foodgram/static/rest_framework/
 
 .DS_Store
+*.toml
 
 
 
