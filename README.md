@@ -11,9 +11,9 @@ Users can:
 
 
 ## Current location:<br>
-http://158.160.44.52/
+You can check deplyed project [here](http://158.160.44.52/)
 
-API spec available at http://158.160.44.52/api/docs/
+API spec available [here](http://158.160.44.52/api/docs/)
 
 ## Local project deploy:<br>
 1. Install Docker on your computer
