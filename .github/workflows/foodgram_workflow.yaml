@@ -73,7 +73,7 @@ jobs:
 
     - name: Test by project tests
       run: |
-        python manage.py test
+        python backend/foodgram/manage.py test
 
   build_and_push_to_docker_hub:
     name: Push to Docker Hub
