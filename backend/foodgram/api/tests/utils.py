@@ -38,7 +38,7 @@ def authorize_client_by_user(client: APIClient, user: User) -> Token:
     Returns
     -------
     Token
-        new token for the given user instance
+        new Token for the given user instance
     """
     token = Token.objects.create(user=user)
     client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
@@ -65,6 +65,7 @@ def test_json_schema(test: TestCase, schema, tested_json):
         test.fail(f"Response data validation failed. Error details:{e}")
 
 
+# TODO Add image content checking
 def test_recipe_content(
     test: TestCase, expected_data: dict, recipe_object: Recipe
 ):

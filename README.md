@@ -11,7 +11,7 @@ Users can:
 
 
 ## Current location:<br>
-You can check deplyed project [here](http://158.160.44.52/)
+You can check deployed project [here](http://158.160.44.52/)
 
 API spec available [here](http://158.160.44.52/api/docs/)
 
